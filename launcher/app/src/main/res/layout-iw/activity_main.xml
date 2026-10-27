@@ -201,7 +201,7 @@
                         android:includeFontPadding="false"
                         android:visibility="gone" />
 
-                    <TextClock
+                    <com.gathin.tvhome.WesternTextClock
                         android:id="@+id/date"
                         android:gravity="right"
                         android:layout_width="wrap_content"
@@ -269,7 +269,7 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:baselineAligned="true">
-                        <TextClock
+                        <com.gathin.tvhome.WesternTextClock
                             android:id="@+id/ampm"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -287,7 +287,7 @@
                             android:ellipsize="none"
                             android:textAllCaps="true" />
 
-                        <TextClock
+                        <com.gathin.tvhome.WesternTextClock
                             android:id="@+id/clock"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"

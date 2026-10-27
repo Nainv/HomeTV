@@ -36,7 +36,9 @@ final class LauncherLocale {
         // Formatters that take no Context (the clock's date, the lunar line) follow the default locale.
         Locale.setDefault(locale);
         Configuration c = new Configuration(base.getResources().getConfiguration());
-        c.setLocale(locale);
+        android.os.LocaleList selected=new android.os.LocaleList(locale);
+        android.os.LocaleList.setDefault(selected);
+        c.setLocales(selected);
         return base.createConfigurationContext(c);
     }
 }
