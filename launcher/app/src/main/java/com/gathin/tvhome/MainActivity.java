@@ -944,6 +944,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     protected void onResume() {
         super.onResume();
         PersonalUpdates.check(this);
+        android.content.SharedPreferences setup = getSharedPreferences("personal_setup", MODE_PRIVATE);
+        if (setup.getInt("version", 0) < 11) {
+            setup.edit().putInt("version", 11).apply();
+            startActivity(new Intent(this, HomeToolsActivity.class).putExtra("task", "setup"));
+        }
         // A festival that started or ended while Home was in the background: rebuild with or without it.
         if (festive != festival.active(LocalDate.now())) {
             recreate();

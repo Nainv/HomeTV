@@ -14,7 +14,7 @@ import java.util.concurrent.*;
 /** Remote-friendly actions; no installation or accessibility permission is accepted on the user's behalf. */
 public final class HomeToolsActivity extends Activity {
     private final ExecutorService worker=Executors.newSingleThreadExecutor();
-    private TextView status;private Button install;private File ready;private boolean busy;
+    private TextView status, homeStatus;private Button install;private File ready;private boolean busy;
     private boolean alive(){return !isFinishing()&&!isDestroyed();}
     private int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
     @Override public void onCreate(Bundle b){super.onCreate(b);
@@ -22,6 +22,7 @@ public final class HomeToolsActivity extends Activity {
         LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);box.setPadding(dp(36),dp(18),dp(36),dp(24));box.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);scroll.addView(box);setContentView(scroll);
         TextView title=new TextView(this);title.setText("تطبيقاتي وإعداد الواجهة");title.setTextColor(Color.WHITE);title.setTextSize(26);box.addView(title);
         TextView help=new TextView(this);help.setText("ذِكرى يفتح مباشرة إذا كان مثبّتاً. التنزيل والتحديث يحتاجان اتصال إنترنت، والتثبيت يحتاج موافقتك من أندرويد.");help.setTextColor(Color.LTGRAY);help.setTextSize(15);help.setPadding(0,dp(8),0,dp(12));box.addView(help);
+        homeStatus=new TextView(this);homeStatus.setTextColor(Color.LTGRAY);homeStatus.setTextSize(16);homeStatus.setPadding(0,dp(10),0,dp(8));box.addView(homeStatus);
         button(box,"ذِكرى — فتح أو تنزيل",()->{if(!PersonalPackages.openZikra(this))startDownload(PersonalPackages.zikra());});
         button(box,"البحث عن تحديث للواجهة",this::checkUpdate);
         button(box,"تفعيل زر Home وفتح الواجهة عند تشغيل التلفزيون",()->{
@@ -29,13 +30,29 @@ public final class HomeToolsActivity extends Activity {
                 .setPositiveButton("فتح تسهيلات الاستخدام",(d,w)->openSettings(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                 .setNegativeButton("رجوع",null).show();
         });
+        button(box,"اختبار زر Home",()->{try{startActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));}catch(Exception e){status.setText("تعذّر فتح الشاشة الرئيسية للنظام.");}});
+        button(box,"اختيار تطبيق الشاشة الرئيسية",()->openSettings(Settings.ACTION_HOME_SETTINGS));
         button(box,"إعدادات التلفزيون",()->openSettings(Settings.ACTION_SETTINGS));
         button(box,"حقوق وتراخيص البرامج",()->new android.app.AlertDialog.Builder(this).setTitle("التراخيص").setMessage("نسخة شخصية معدّلة من CleanYourTV. حقوق 2026 Gathin — ترخيص MIT. خط Outfit تحت ترخيص SIL OFL 1.1. النصوص الكاملة مضمّنة في assets/licenses داخل APK. ذِكرى تطبيق منفصل من مستودع المستخدم.").setPositiveButton("موافق",null).show());
         status=new TextView(this);status.setTextColor(Color.LTGRAY);status.setTextSize(16);status.setPadding(0,dp(14),0,dp(12));box.addView(status);
         install=button(box,"تثبيت الملف الجاهز",this::installReady);install.setVisibility(View.GONE);
         button(box,"رجوع للواجهة",this::finish);
-        box.getChildAt(2).requestFocus();
+        box.getChildAt(3).requestFocus();
         if("update".equals(getIntent().getStringExtra("task")))checkUpdate();
+        if("setup".equals(getIntent().getStringExtra("task"))) {
+            Intent z=getPackageManager().getLeanbackLaunchIntentForPackage(PersonalPackages.ZIKRA_PACKAGE);
+            if(z==null)startDownload(PersonalPackages.zikra());
+            else status.setText("ذِكرى مثبّت. استخدم زر ذِكرى لفتحه، وفعّل خدمة Home من الزر أدناه.");
+        }
+    }
+    @Override protected void onResume(){super.onResume();
+        android.view.accessibility.AccessibilityManager manager=(android.view.accessibility.AccessibilityManager)getSystemService(ACCESSIBILITY_SERVICE);
+        boolean enabled=false;
+        if(manager!=null)for(android.accessibilityservice.AccessibilityServiceInfo info:manager.getEnabledAccessibilityServiceList(android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_ALL_MASK)){
+            android.content.ComponentName cn=android.content.ComponentName.unflattenFromString(info.getId());
+            if(cn!=null&&cn.getPackageName().equals(getPackageName())&&cn.getClassName().equals(HomeKeyService.class.getName()))enabled=true;
+        }
+        if(homeStatus!=null)homeStatus.setText(HomeKeyService.isConnected()?"خدمة Home: متصلة. جرّب زر Home الحقيقي بالريموت من داخل يوتيوب.":enabled?"خدمة Home: مفعّلة لكن غير متصلة بعد. أوقفها وشغّلها من تسهيلات الاستخدام.":"خدمة Home: غير مفعّلة. زر الريموت لن يتحوّل قبل تفعيل خدمة «زر الرئيسية».");
     }
     private Button button(LinearLayout box,String text,Runnable action){Button b=new Button(this);b.setText(text);b.setAllCaps(false);b.setTextSize(17);b.setPadding(dp(15),dp(7),dp(15),dp(7));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(55));p.topMargin=dp(9);box.addView(b,p);b.setOnClickListener(v->action.run());return b;}
     private void openSettings(String action){try{startActivity(new Intent(action));}catch(Exception e){status.setText("صفحة الإعدادات غير متاحة على هذا التلفزيون.");}}
