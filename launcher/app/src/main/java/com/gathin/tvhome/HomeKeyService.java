@@ -82,6 +82,10 @@ public class HomeKeyService extends AccessibilityService {
     private String frontPackage = "";
     /** power_on_home_always: Home at every power-on, not only over Live TV. */
     private boolean powerOnAlways;
+    private final HomePressSequence homePresses = new HomePressSequence();
+    private boolean stockHomeRequested;
+    private PowerMenuRemote powerMenu;
+
     /** power_on_home: re-arms after the screen turns on; null unless the key is on. */
     private BroadcastReceiver screenOnReceiver;
     /** Stops key filtering while a game controller is connected; null unless gamepad_passthrough and key_filter, or before the unlock. */
@@ -99,6 +103,7 @@ public class HomeKeyService extends AccessibilityService {
     protected void onServiceConnected() {
         super.onServiceConnected();
         running = this;
+        powerMenu = new PowerMenuRemote(this);
         settingsScancodes = getResources().getIntArray(R.array.settings_key_scancodes);
         // The service is directBootAware: Android 11 skips a service that is not while the user is still
         // locked at boot, writes accessibility_enabled=0 and, on TCL G03 firmware, never binds it after the
@@ -140,6 +145,8 @@ public class HomeKeyService extends AccessibilityService {
     @Override
     public void onDestroy() {
         if (running == this) running = null;
+        if (powerMenu != null) powerMenu.close();
+        handler.removeCallbacksAndMessages(null);
         stopWaitingForUnlock();
         if (screenOnReceiver != null) unregisterReceiver(screenOnReceiver);
         if (standbyExit != null) {
@@ -224,7 +231,7 @@ public class HomeKeyService extends AccessibilityService {
         }
         // home_key_service.xml subscribes to no events, so the redirects ask for window changes only when one is on.
         AccessibilityServiceInfo info = getServiceInfo();
-        if (info != null && (!stockHome.isEmpty() || !powerOnLiveTv.isEmpty() || watchFront)) {
+        if (info != null && (!stockHome.isEmpty() || !powerOnLiveTv.isEmpty() || powerOnAlways || watchFront)) {
             info.eventTypes |= AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
             setServiceInfo(info);
         }
@@ -255,6 +262,16 @@ public class HomeKeyService extends AccessibilityService {
 
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
+        if (powerMenu != null && powerMenu.handle(event)) return true;
+        if (event.getKeyCode() == KeyEvent.KEYCODE_HOME || event.getKeyCode() == KeyEvent.KEYCODE_ALL_APPS) {
+            powerOnUntil = 0;
+            if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
+                if (homePresses.press(SystemClock.elapsedRealtime())) openStockHome();
+                else { stockHomeRequested = false; openHome(); }
+            }
+            return true;
+        }
+        if (event.getAction() == KeyEvent.ACTION_DOWN) homePresses.reset();
         // power_on_home: the first key after power-on hands the TV to the user (power and wake keys don't count).
         if (powerOnUntil != 0 && event.getAction() == KeyEvent.ACTION_DOWN
                 && event.getKeyCode() != KeyEvent.KEYCODE_POWER && event.getKeyCode() != KeyEvent.KEYCODE_WAKEUP) {
@@ -303,6 +320,7 @@ public class HomeKeyService extends AccessibilityService {
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         if (event.getEventType() != AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) return;
+        if (powerMenu != null) powerMenu.refresh();
         // app_keys "front:" entries: only activities count, so a toast or the volume bar doesn't change the app in front.
         if ((!frontAppKeys.isEmpty() || !frontAppScancodes.isEmpty())
                 && event.getPackageName() != null && event.getClassName() != null) {
@@ -321,7 +339,7 @@ public class HomeKeyService extends AccessibilityService {
         }
         // stock_home_redirect: the firmware turned the stock launcher back on and its home screen came up.
         CharSequence cls = event.getClassName();
-        if (!stockHome.isEmpty() && cls != null && stockHome.contains(cls.toString())) openHome();
+        if (!stockHomeRequested && !stockHome.isEmpty() && cls != null && stockHome.contains(cls.toString())) openHome();
     }
 
     /** How long power_on_home stays armed after the screen turns on without a reboot. */
@@ -337,6 +355,8 @@ public class HomeKeyService extends AccessibilityService {
         screenOnReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
+                stockHomeRequested = false;
+                homePresses.reset();
                 powerOnUntil = SystemClock.elapsedRealtime() + SCREEN_ON_WINDOW_MS;
                 if (powerOnAlways) handler.postDelayed(HomeKeyService.this::homeAtPowerOn, POWER_ON_ALWAYS_DELAY_MS);
             }
@@ -349,7 +369,10 @@ public class HomeKeyService extends AccessibilityService {
 
     /** power_on_home_always: Home, unless a key was pressed since the screen came on (the user has the TV). */
     private void homeAtPowerOn() {
-        if (stillArmed(SystemClock.elapsedRealtime(), powerOnUntil)) openHome();
+        if (stillArmed(SystemClock.elapsedRealtime(), powerOnUntil)) {
+            stockHomeRequested = false;
+            openHome();
+        }
     }
 
     static boolean stillArmed(long now, long armedUntil) {
@@ -364,7 +387,14 @@ public class HomeKeyService extends AccessibilityService {
     /** The system power menu (Restart, and Power off where the firmware has it); the TV asks before it acts. */
     static void openPowerMenu() {
         HomeKeyService service = running;
-        if (service != null) service.performGlobalAction(GLOBAL_ACTION_POWER_DIALOG);
+        if (service != null) {
+            // Let the launcher's PopupWindow release input focus before opening the system dialog.
+            service.handler.postDelayed(() -> {
+                service.powerMenu.arm();
+                if (!service.performGlobalAction(GLOBAL_ACTION_POWER_DIALOG)) service.powerMenu.close();
+                else service.handler.postDelayed(service.powerMenu::refresh, 350);
+            }, 220);
+        }
     }
 
     static boolean powerOnRedirect(String liveTv, CharSequence pkg, long now, long armedUntil) {
@@ -412,6 +442,14 @@ public class HomeKeyService extends AccessibilityService {
 
     static boolean isShortPress(long downTime, long upTime, long longPressTimeout) {
         return upTime - downTime < longPressTimeout;
+    }
+
+    private void openStockHome() {
+        Intent home = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).setPackage(stockHomePackage);
+        if (home.resolveActivity(getPackageManager()) == null) { stockHomeRequested = false; openHome(); return; }
+        stockHomeRequested = true;
+        try { startActivity(home.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)); }
+        catch (ActivityNotFoundException | SecurityException unavailable) { stockHomeRequested = false; openHome(); }
     }
 
     private void openHome() {

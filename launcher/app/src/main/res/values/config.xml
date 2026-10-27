@@ -106,7 +106,7 @@
          "key_filter"). Some firmware (TCL Google TV on Android 12) drops key auto-repeat once ANY service
          filters keys, so long-pressing volume only steps once: set false and the service keeps running but
          stops filtering, which brings repeat back at the price of the remote buttons below doing nothing. -->
-    <bool name="key_filter">false</bool>
+    <bool name="key_filter">true</bool>
 
     <!-- With key_filter on, true makes HomeKeyService and InputKeyService stop filtering keys while a game
          controller is connected, so games see its buttons (Steam Link with an Xbox controller on a TCL G07
@@ -119,7 +119,7 @@
          that applies a volume key before the filter and again when the helper hands it back, so one tap moves two
          steps (TCL G03 / BeyondTV4 on Android 11, #1100); a swallowed key gets no auto-repeat from Android, hence
          the helper's own. Leave it off where a tap is one step. A theme can set it ("consume_volume_keys"). -->
-    <bool name="consume_volume_keys">false</bool>
+    <bool name="consume_volume_keys">true</bool>
 
     <!-- Vendor source numbers for the Inputs menu, "HW<n>=<number>" by the framework input id's last part
          (`tools/tv.py 'dumpsys tv_input'` lists them). A mapped input opens by sending input_action with the

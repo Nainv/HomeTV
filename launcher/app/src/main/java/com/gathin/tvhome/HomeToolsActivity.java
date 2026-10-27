@@ -26,7 +26,7 @@ public final class HomeToolsActivity extends Activity {
         button(box,"ذِكرى — فتح أو تنزيل",()->{if(!PersonalPackages.openZikra(this))startDownload(PersonalPackages.zikra());});
         button(box,"البحث عن تحديث للواجهة",this::checkUpdate);
         button(box,"تفعيل زر Home وفتح الواجهة عند تشغيل التلفزيون",()->{
-            new android.app.AlertDialog.Builder(this).setTitle("خدمة زر الرئيسية").setMessage("في الصفحة التالية اختر خدمة «زر الرئيسية» التابعة لهذا التطبيق وفعّلها. الخدمة تراقب تغيّر النوافذ لإرجاع الشاشة إلى هذه الواجهة؛ التقاط أزرار الريموت مطفأ للمحافظة على تكرار الصوت. اختبر Home ثم إعادة التشغيل. يمكن إيقاف الخدمة من نفس الصفحة.")
+            new android.app.AlertDialog.Builder(this).setTitle("خدمة زر الرئيسية").setMessage("في الصفحة التالية اختر خدمة «زر الرئيسية» التابعة لهذا التطبيق وفعّلها. ضغطة Home واحدة تفتح واجهتنا، و٣ ضغطات متتالية بفاصل أقل من ثلثي ثانية تفتح واجهة Philips. الخدمة تقرأ أزرار قائمة الطاقة فقط عند طلب فتحها لتشغيلها بالريموت. اختبر Home والصوت ثم إطفاء وتشغيل التلفزيون. يمكن إيقاف الخدمة من نفس الصفحة.")
                 .setPositiveButton("فتح تسهيلات الاستخدام",(d,w)->openSettings(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                 .setNegativeButton("رجوع",null).show();
         });
@@ -52,7 +52,7 @@ public final class HomeToolsActivity extends Activity {
             android.content.ComponentName cn=android.content.ComponentName.unflattenFromString(info.getId());
             if(cn!=null&&cn.getPackageName().equals(getPackageName())&&cn.getClassName().equals(HomeKeyService.class.getName()))enabled=true;
         }
-        if(homeStatus!=null)homeStatus.setText(HomeKeyService.isConnected()?"خدمة Home: متصلة. جرّب زر Home الحقيقي بالريموت من داخل يوتيوب.":enabled?"خدمة Home: مفعّلة لكن غير متصلة بعد. أوقفها وشغّلها من تسهيلات الاستخدام.":"خدمة Home: غير مفعّلة. زر الريموت لن يتحوّل قبل تفعيل خدمة «زر الرئيسية».");
+        if(homeStatus!=null)homeStatus.setText(HomeKeyService.isConnected()?"خدمة Home: متصلة. ضغطة واحدة لواجهتنا، و٣ ضغطات سريعة لواجهة Philips.":enabled?"خدمة Home: مفعّلة لكن غير متصلة بعد. أوقفها وشغّلها من تسهيلات الاستخدام.":"خدمة Home: غير مفعّلة. زر الريموت لن يتحوّل قبل تفعيل خدمة «زر الرئيسية».");
     }
     private Button button(LinearLayout box,String text,Runnable action){Button b=new Button(this);b.setText(text);b.setAllCaps(false);b.setTextSize(17);b.setPadding(dp(15),dp(7),dp(15),dp(7));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(55));p.topMargin=dp(9);box.addView(b,p);b.setOnClickListener(v->action.run());return b;}
     private void openSettings(String action){try{startActivity(new Intent(action));}catch(Exception e){status.setText("صفحة الإعدادات غير متاحة على هذا التلفزيون.");}}
