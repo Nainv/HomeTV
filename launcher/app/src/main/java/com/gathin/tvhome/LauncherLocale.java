@@ -23,10 +23,16 @@ final class LauncherLocale {
         return Locale.forLanguageTag(tag.trim());
     }
 
+    static Locale westernDigits(Locale locale) {
+        return new Locale.Builder().setLocale(locale).setUnicodeLocaleKeyword("nu", "latn").build();
+    }
+
     /** base with the configured language, or base itself when locale is off. */
     static Context wrap(Context base) {
         Locale locale = parse(Config.load(base).locale);
-        if (locale == null) return base;
+        if (locale == null) locale = base.getResources().getConfiguration().getLocales().get(0);
+        // Keep the selected language and direction, but use Western 0-9 in all formatters.
+        locale = westernDigits(locale);
         // Formatters that take no Context (the clock's date, the lunar line) follow the default locale.
         Locale.setDefault(locale);
         Configuration c = new Configuration(base.getResources().getConfiguration());

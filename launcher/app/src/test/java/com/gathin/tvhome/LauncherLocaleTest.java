@@ -21,6 +21,14 @@ public class LauncherLocaleTest {
     }
 
     @Test
+    public void arabicKeepsItsLanguageButUsesWesternClockDigits() {
+        java.util.Locale locale=LauncherLocale.westernDigits(java.util.Locale.forLanguageTag("ar-SY-u-nu-arab"));
+        assertEquals("ar",locale.getLanguage());assertEquals("SY",locale.getCountry());
+        assertEquals("latn",locale.getUnicodeLocaleType("nu"));
+        assertEquals("123",java.text.NumberFormat.getIntegerInstance(locale).format(123));
+    }
+
+    @Test
     public void emptyOrMalformedTagsFollowTheTv() {
         assertNull(LauncherLocale.parse(""));
         assertNull(LauncherLocale.parse(null));
