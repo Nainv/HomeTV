@@ -29,8 +29,9 @@ final class LauncherLocale {
 
     /** base with the configured language, or base itself when locale is off. */
     static Context wrap(Context base) {
-        Locale locale = parse(Config.load(base).locale);
-        if (locale == null) locale = base.getResources().getConfiguration().getLocales().get(0);
+        String choice = base.getSharedPreferences("home_language", 0).getString("choice", null);
+        Locale locale = parse(choice == null ? Config.load(base).locale : choice);
+        if (locale == null) locale = android.content.res.Resources.getSystem().getConfiguration().getLocales().get(0);
         // Keep the selected language and direction, but use Western 0-9 in all formatters.
         locale = westernDigits(locale);
         // Formatters that take no Context (the clock's date, the lunar line) follow the default locale.
