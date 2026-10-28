@@ -943,6 +943,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onResume() {
         super.onResume();
+        LauncherHijackCompatService.onHomeResumed(this);
         if ("home-diagnostics".equals(getIntent().getStringExtra("task"))) {
             getIntent().removeExtra("task");
             startActivity(new Intent(this, HomeToolsActivity.class).putExtra("task", "diagnostics"));
