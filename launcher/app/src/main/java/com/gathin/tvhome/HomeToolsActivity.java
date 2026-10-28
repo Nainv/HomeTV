@@ -68,7 +68,7 @@ public final class HomeToolsActivity extends Activity {
         String task = getIntent().getStringExtra("task");
         if ("update".equals(task)) checkUpdate();
         else if ("zikra".equals(task) || "setup".equals(task)) openZikra();
-        else if ("moon".equals(task)) status.setText(R.string.home_moon_pending);
+        else if ("moon".equals(task) && !PersonalPackages.openMoon(this)) startDownload(PersonalPackages.moon());
         else if ("diagnostics".equals(task)) showHomeDiagnostics();
         if (saved != null && saved.containsKey("download_url")) {
             PersonalPackages.Target target = new PersonalPackages.Target(
