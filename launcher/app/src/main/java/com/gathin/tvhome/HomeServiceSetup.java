@@ -5,8 +5,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.provider.Settings;
-import java.util.ArrayList;
-import java.util.List;
 
 /** Explicit user-requested service setup after a one-time WRITE_SECURE_SETTINGS grant. */
 final class HomeServiceSetup {
@@ -23,18 +21,13 @@ final class HomeServiceSetup {
                 Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
         int previousEnabled = Settings.Secure.getInt(context.getContentResolver(),
                 Settings.Secure.ACCESSIBILITY_ENABLED, 0);
-        List<String> services = new ArrayList<>();
-        if (previous != null) for (String entry : previous.split(":")) {
-            if (!entry.isEmpty() && !own.equals(ComponentName.unflattenFromString(entry)))
-                services.add(entry);
-        }
-        if (enable) services.add(own.flattenToString());
-        String updated = android.text.TextUtils.join(":", services);
+        String updated = HomeServiceSelection.update(previous, own.flattenToString(),
+                own.flattenToShortString(), enable);
         try {
             if (!Settings.Secure.putString(context.getContentResolver(),
                     Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, updated))
                 throw new IllegalStateException("رفض النظام حفظ قائمة الخدمات.");
-            int enabledFlag = services.isEmpty() ? 0 : (enable ? 1 : previousEnabled);
+            int enabledFlag = updated.isEmpty() ? 0 : (enable ? 1 : previousEnabled);
             if (!Settings.Secure.putInt(context.getContentResolver(),
                     Settings.Secure.ACCESSIBILITY_ENABLED, enabledFlag))
                 throw new IllegalStateException("رفض النظام حفظ التفعيل.");
