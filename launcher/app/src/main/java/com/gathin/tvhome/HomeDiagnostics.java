@@ -23,9 +23,10 @@ final class HomeDiagnostics {
 
     static void phase(Context context, String phase, Throwable failure) {
         String detail = failure == null ? "" : Log.getStackTraceString(failure);
-        context.getSharedPreferences(PREFS, 0).edit()
-                .putString("phase", phase).putLong("time", System.currentTimeMillis())
-                .putString("error", detail).commit();
+        android.content.SharedPreferences.Editor edit = context.getSharedPreferences(PREFS, 0).edit()
+                .putString("phase", phase).putLong("time", System.currentTimeMillis());
+        if (failure != null) edit.putString("error", detail).putLong("errorTime", System.currentTimeMillis());
+        edit.commit();
         if (failure == null) Log.i(TAG, phase);
         else Log.e(TAG, phase, failure);
     }
