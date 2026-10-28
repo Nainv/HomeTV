@@ -99,6 +99,14 @@ public class HomeKeyService extends AccessibilityService {
 
     static boolean isConnected() { return running != null; }
 
+    /** User requested Stop in Home settings; disable only this service. */
+    static boolean disableFromSettings() {
+        HomeKeyService service = running;
+        if (service == null) return false;
+        service.disableSelf();
+        return true;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();

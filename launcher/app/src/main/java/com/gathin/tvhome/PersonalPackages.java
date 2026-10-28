@@ -36,7 +36,7 @@ final class PersonalPackages {
                 "57a5685e775fc6d5da629162b875b82e8e9c5e2dcd1e77c9b87cfeafae4f47fd", 39);
     }
     static Target zikra() throws Exception {
-        String assetName = Build.VERSION.SDK_INT < 26 ? "Zikratv-fireos6.apk" : "Zikratv.apk";
+        String assetName = "Zikratv.apk";
         // Resolve the current asset digest from the owner's release, so replacement
         // APKs at the stable URL never get blocked by an obsolete hard-coded hash.
         HttpURLConnection connection = connect(

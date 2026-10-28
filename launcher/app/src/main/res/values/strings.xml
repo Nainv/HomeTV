@@ -185,4 +185,8 @@
     <string name="home_later">Later</string>
     <string name="home_updates_channel">Home updates</string>
     <string name="home_restart_service">Enable the Home service to open the system power menu.</string>
+    <string name="home_screen_title">Home on Android TV</string>
+    <string name="home_amazon_title">Home on Amazon</string>
+    <string name="home_screen_permission">Turn on “%1$s” in Accessibility settings, then return to Home.</string>
+    <string name="home_screen_disable_permission">Turn off “%1$s” in Accessibility settings, then return to Home.</string>
 </resources>
