@@ -18,7 +18,6 @@ import java.security.MessageDigest;
 /** Personal-fork downloads: fixed HTTPS origin, pinned hashes and package identity, OS-confirmed install. */
 final class PersonalPackages {
     static final String ORIGIN = "https://nainv.github.io/HomeTV";
-    private static final String ZIKRA_ORIGIN = "https://tvhome-philips.funchair515.chatgpt.site";
     static final String ZIKRA_PACKAGE = "com.zikra.tv";
     static final String SELF_PACKAGE = "com.gathin.tvhome";
     static final long MAX_APK = 64L * 1024 * 1024;
@@ -30,9 +29,32 @@ final class PersonalPackages {
         }
     }
     interface Progress { void bytes(long received, long total); }
-    static Target zikra() {
-        return new Target("ذِكرى 1.0.5", ZIKRA_PACKAGE, ZIKRA_ORIGIN+"/zikra.apk",
-                "484a5c171c1ddd404aa4008d931ed8cbf937c0360ae3b2ef7bee5af4f97910a5", 1000232);
+    static Target zikra() throws Exception {
+        // Resolve the current asset digest from the owner's release, so replacement
+        // APKs at the stable URL never get blocked by an obsolete hard-coded hash.
+        HttpURLConnection connection = connect(
+                "https://api.github.com/repos/Nainv/ZApp/releases/tags/v1.0.5");
+        try (InputStream in = connection.getInputStream();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[4096]; int count;
+            while ((count = in.read(buffer)) != -1) {
+                if (out.size() + count > 262144) throw new IOException("بيانات الإصدار كبيرة جدًا");
+                out.write(buffer, 0, count);
+            }
+            org.json.JSONArray assets = new JSONObject(out.toString(StandardCharsets.UTF_8.name()))
+                    .getJSONArray("assets");
+            String expected = "https://github.com/Nainv/ZApp/releases/download/v1.0.5/Zikratv.apk";
+            for (int i = 0; i < assets.length(); i++) {
+                JSONObject asset = assets.getJSONObject(i);
+                if (!"Zikratv.apk".equals(asset.getString("name"))) continue;
+                String hash = asset.optString("digest", "");
+                if (!expected.equals(asset.getString("browser_download_url"))
+                        || !hash.matches("sha256:[a-fA-F0-9]{64}"))
+                    throw new IOException("بيانات ملف ذكرى غير صالحة");
+                return new Target("ذِكرى", ZIKRA_PACKAGE, expected, hash.substring(7), 0);
+            }
+            throw new IOException("ملف ذكرى غير موجود بالإصدار");
+        } finally { connection.disconnect(); }
     }
     static Target latest() throws Exception {
         boolean fireOs6 = Build.VERSION.SDK_INT < 26;
@@ -50,14 +72,33 @@ final class PersonalPackages {
         } finally { c.disconnect(); }
     }
     static HttpURLConnection connect(String value) throws Exception {
-        URL url=new URL(value);
-        if(!"https".equals(url.getProtocol())
-                || (!new URL(ORIGIN).getHost().equals(url.getHost())
-                && !new URL(ZIKRA_ORIGIN).getHost().equals(url.getHost())))
-            throw new IOException("مصدر التنزيل غير مسموح");
-        HttpURLConnection c=(HttpURLConnection)url.openConnection();c.setInstanceFollowRedirects(false);
-        c.setConnectTimeout(20000);c.setReadTimeout(30000);c.setUseCaches(false);
-        int status=c.getResponseCode();if(status!=200){c.disconnect();throw new IOException("تعذّر التنزيل ("+status+")");}return c;
+        URL url = new URL(value);
+        for (int redirects = 0; redirects < 6; redirects++) {
+            String host = url.getHost();
+            if (!"https".equals(url.getProtocol()) || !(
+                    "nainv.github.io".equals(host)
+                    || "api.github.com".equals(host)
+                    || "github.com".equals(host)
+                    || "release-assets.githubusercontent.com".equals(host)
+                    || "objects.githubusercontent.com".equals(host)))
+                throw new IOException("مصدر التنزيل غير مسموح");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setInstanceFollowRedirects(false);
+            connection.setConnectTimeout(20000); connection.setReadTimeout(30000);
+            connection.setUseCaches(false);
+            int status = connection.getResponseCode();
+            if (status == 200) return connection;
+            if (status == 301 || status == 302 || status == 303 || status == 307 || status == 308) {
+                String location = connection.getHeaderField("Location");
+                connection.disconnect();
+                if (location == null) throw new IOException("رابط التحويل مفقود");
+                url = new URL(url, location);
+            } else {
+                connection.disconnect();
+                throw new IOException("تعذّر التنزيل (" + status + ")");
+            }
+        }
+        throw new IOException("تحويلات التنزيل كثيرة جدًا");
     }
     static File file(Context c,Target t){return new File(new File(c.getCacheDir(),"installers"),t.pkg+"-"+t.version+".apk");}
     static File download(Context context,Target target,Progress progress)throws Exception {
@@ -82,7 +123,7 @@ final class PersonalPackages {
         StringBuilder hex=new StringBuilder();for(byte b:digest.digest())hex.append(String.format(java.util.Locale.ROOT,"%02x",b&255));
         if(!hex.toString().equalsIgnoreCase(t.sha))throw new IOException("الملف لا يطابق النسخة المعتمدة. أعد المحاولة لاحقاً.");
         PackageManager pm=c.getPackageManager();PackageInfo p=pm.getPackageArchiveInfo(f.getPath(),PackageManager.GET_SIGNATURES);
-        if(p==null||!t.pkg.equals(p.packageName)||p.versionCode!=t.version)throw new IOException("حزمة أو إصدار التطبيق غير صحيح");
+        if(p==null||!t.pkg.equals(p.packageName)||(t.version > 0 && p.versionCode!=t.version))throw new IOException("حزمة أو إصدار التطبيق غير صحيح");
         if(t.pkg.equals(c.getPackageName())){
             PackageInfo current=pm.getPackageInfo(c.getPackageName(),PackageManager.GET_SIGNATURES);
             if(current.signatures==null||p.signatures==null||!java.util.Arrays.equals(current.signatures,p.signatures))throw new IOException("توقيع التحديث لا يطابق التطبيق الحالي");
