@@ -81,11 +81,12 @@ class SettingsMenuDocumentedTest(unittest.TestCase):
         self.xml = STRINGS.read_text(encoding="utf-8")
         self.block = settings_block(README.read_text(encoding="utf-8"))
 
-    def test_the_menu_still_offers_the_vendor_settings_app(self):
-        # The subject of this file: without this row there is no route to Account & Security on a set
-        # whose Settings action resolves to the Android app.
-        self.assertIn("native_settings", menu_rows(self.body),
-                      "showSettingsMenu() no longer adds a Native settings row: this page and the note are stale")
+    def test_system_settings_remain_available_on_long_press(self):
+        source = MAIN_ACTIVITY.read_text(encoding="utf-8")
+        start = source.index("btnSettings.setOnLongClickListener")
+        end = source.index("});", start)
+        self.assertIn("Settings.ACTION_SETTINGS", source[start:end])
+        self.assertIn("return true", source[start:end])
 
     def test_every_menu_row_is_named_in_the_readme_block(self):
         rows = menu_rows(self.body)
@@ -125,11 +126,10 @@ class MenuReaderTest(unittest.TestCase):
         self.assertEqual(menu_rows(body), [])
 
     def test_the_real_menu_is_read(self):
-        # Six rows today: launcher settings, native settings, module cards, dock edit, reorder, restart.
+        # Six actions requested for this HomeTV fork; system settings remain on long press.
         body = method_body(MAIN_ACTIVITY.read_text(encoding="utf-8"))
         self.assertEqual(menu_rows(body),
-                         ["launcher_settings", "native_settings", "module_cards", "dock_edit", "reorder",
-                          "power_menu"])
+                         ["menu_tv", "menu_zikra", "personal_tools", "dock_edit", "reorder", "power_menu"])
 
     def test_a_row_with_no_string_is_reported(self):
         with self.assertRaisesRegex(AssertionError, r"R\.string\.not_a_string"):
