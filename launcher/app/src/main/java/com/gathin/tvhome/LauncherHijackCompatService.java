@@ -175,6 +175,14 @@ public final class LauncherHijackCompatService extends Service {
             }
         }
     };
+    // Foreground service types were introduced in API 29 and required in API 34.
+    // This service deliberately never runs outside Amazon API 25.
+    @android.annotation.SuppressLint("ForegroundServiceType")
+    private void startFireOs6Foreground(android.app.Notification notification) {
+        if (!supported()) throw new IllegalStateException("Fire OS 6 only");
+        startForeground(8096, notification);
+    }
+
     @Override public void onCreate() {
         super.onCreate();
         if (!supported() || !enabled(this)) { stopSelf(); return; }
@@ -191,7 +199,7 @@ public final class LauncherHijackCompatService extends Service {
                             new Intent(this, HomeToolsActivity.class),
                             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE))
                     .build();
-            startForeground(8096, notification);
+            startFireOs6Foreground(notification);
             foreground = true;
             usageThread = new HandlerThread("HomeUsageWatcher",
                     android.os.Process.THREAD_PRIORITY_BACKGROUND);
