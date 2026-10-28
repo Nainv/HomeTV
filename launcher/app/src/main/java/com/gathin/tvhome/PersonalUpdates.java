@@ -62,8 +62,10 @@ final class PersonalUpdates {
     }
     static synchronized java.util.concurrent.Future<?> checkBackground(Context base, Runnable finished) {
         if (checking) return null;
+        Context context;
+        try { context = LauncherLocale.wrap(base.getApplicationContext()); }
+        catch (RuntimeException unavailable) { return null; }
         checking = true;
-        Context context = LauncherLocale.wrap(base.getApplicationContext());
         java.util.concurrent.FutureTask<Void> task = new java.util.concurrent.FutureTask<Void>(() -> {
             try {
                 PersonalPackages.Target target = PersonalPackages.latest();
