@@ -33,6 +33,8 @@ public final class HomeToolsActivity extends Activity {
     @Override public void onCreate(Bundle saved) {
         super.onCreate(saved);
         FrameLayout root = new FrameLayout(this);
+        root.setLayoutDirection(android.text.TextUtils.getLayoutDirectionFromLocale(
+                getResources().getConfiguration().getLocales().get(0)));
         root.setBackgroundColor(Color.rgb(13, 25, 28));
         ScrollView scroll = new ScrollView(this);
         FrameLayout.LayoutParams outer = new FrameLayout.LayoutParams(
