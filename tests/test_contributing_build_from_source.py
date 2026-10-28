@@ -41,7 +41,7 @@ COMPILE_SDK = re.compile(r"^\s*compileSdk\s+(\d+)\s*$", re.M)
 # What the route needs to say, each with the reason it is on the list.
 NEEDED = {
     "./gradlew": "the build command itself",
-    "assembleRelease": "the task that produces the release APK",
+    "assembleStandardRelease": "the task that produces the release APK",
     "local.properties": "the file Gradle reads sdk.dir from",
     "ANDROID_HOME": "the environment variable that does the same",
     "jlink": "what a JRE lacks, so a Java 17 that answers is not enough",
@@ -138,7 +138,7 @@ class ContributingBuildTest(unittest.TestCase):
 
     def test_ci_still_builds_the_release_apk_from_launcher(self):
         job = launcher_job(self.ci)
-        self.assertIn("assembleRelease", job,
+        self.assertIn("assembleStandardRelease", job,
                       "ci.yml's launcher job no longer builds the release APK the page tells people to build")
         self.assertIn("working-directory: launcher", job,
                       "ci.yml's launcher job no longer runs from launcher/, which is where the page's command runs")
@@ -147,7 +147,7 @@ class ContributingBuildTest(unittest.TestCase):
 
     def test_the_page_names_the_command_and_where_the_apk_lands(self):
         body = section(self.page)
-        self.assertTrue("assembleRelease" in body,
+        self.assertTrue("assembleStandardRelease" in body,
                         "the build route CONTRIBUTING gives for a laptop names no Gradle task")
         self.assertTrue(apk_path(self.ci) in body,
                         "the page does not say where a by-hand build leaves the APK")
@@ -173,12 +173,12 @@ class ContributingBuildTest(unittest.TestCase):
 
     def test_a_wrapped_phrase_is_read(self):
         page = ("## 2. Improve the launcher\n\nFrom launcher/, ./gradlew --no-daemon\n"
-                "assembleRelease leaves the APK in launcher/app/build/outputs/apk/release.\n"
+                "assembleStandardRelease leaves the APK in launcher/app/build/outputs/apk/release.\n"
                 "Set ANDROID_HOME or write local.properties, and use a JDK with jlink.\n\n## 3. Next\n")
         self.assertEqual([], missing(page))
 
     def test_another_section_is_not_read(self):
-        page = ("## 1. Add your TV model\n\n./gradlew assembleRelease with ANDROID_HOME, local.properties "
+        page = ("## 1. Add your TV model\n\n./gradlew assembleStandardRelease with ANDROID_HOME, local.properties "
                 "and jlink.\n\n## 2. Improve the launcher\n\nBuild with build-and-install.sh.\n\n## 3. Next\n")
         self.assertEqual(sorted(NEEDED), sorted(missing(page)),
                          "the launcher section was read from another heading's text")
