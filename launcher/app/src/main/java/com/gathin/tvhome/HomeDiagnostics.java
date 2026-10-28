@@ -92,6 +92,7 @@ final class HomeDiagnostics {
         } catch (Exception | LinkageError error) {
             out.append("\nreportError=").append(Log.getStackTraceString(error));
         }
+        out.append("\n").append(LauncherHijackCompatService.report(context));
         String report = out.toString();
         Log.i(TAG, report);
         File directory = context.getExternalFilesDir(null);
