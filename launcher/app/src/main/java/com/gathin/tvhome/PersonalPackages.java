@@ -36,6 +36,7 @@ final class PersonalPackages {
                 "57a5685e775fc6d5da629162b875b82e8e9c5e2dcd1e77c9b87cfeafae4f47fd", 39);
     }
     static Target zikra() throws Exception {
+        String assetName = Build.VERSION.SDK_INT < 26 ? "Zikratv-fireos6.apk" : "Zikratv.apk";
         // Resolve the current asset digest from the owner's release, so replacement
         // APKs at the stable URL never get blocked by an obsolete hard-coded hash.
         HttpURLConnection connection = connect(
@@ -49,10 +50,10 @@ final class PersonalPackages {
             }
             org.json.JSONArray assets = new JSONObject(out.toString(StandardCharsets.UTF_8.name()))
                     .getJSONArray("assets");
-            String expected = "https://github.com/Nainv/ZApp/releases/download/v1.0.5/Zikratv.apk";
+            String expected = "https://github.com/Nainv/ZApp/releases/download/v1.0.5/" + assetName;
             for (int i = 0; i < assets.length(); i++) {
                 JSONObject asset = assets.getJSONObject(i);
-                if (!"Zikratv.apk".equals(asset.getString("name"))) continue;
+                if (!assetName.equals(asset.getString("name"))) continue;
                 String hash = asset.optString("digest", "");
                 if (!expected.equals(asset.getString("browser_download_url"))
                         || !hash.matches("sha256:[a-fA-F0-9]{64}"))
