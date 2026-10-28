@@ -662,6 +662,11 @@ The Home service is opt-in. The Android 11 Fire TV test confirmed immediate Home
 binding, but the observed delayed binding after a cold boot needs another physical-device test.
 Diagnostics use device-protected storage so early binding does not access locked credential storage.
 
+The retained legacy appearance-editor source (not another action in the simplified menu) includes
+**Apps per row**: 4, 5, 6 or 7; **Rows below dock**: 0 to 3; **Dock band opacity**:
+100%, 70%, 50% or 30%; **Wallpaper**, **Animations**, **Advanced effects**, **Open on start**,
+**Follow theme (reset on-TV choices)**, **Choose default home**, and **TV system settings**.
+
 </details>
 
 <details>
