@@ -111,7 +111,7 @@ jobs:
           test -n "$APKSIGNER"
           "$APKSIGNER" verify --verbose --print-certs "$STANDARD_APK" | tee "$RUNNER_TEMP/home-tv-standard-signature.txt"
           "$APKSIGNER" verify --verbose --print-certs "$FIREOS6_APK" | tee "$RUNNER_TEMP/home-tv-fireos6-signature.txt"
-          python3 - <<'PY'
+          STANDARD_APK="$STANDARD_APK" FIREOS6_APK="$FIREOS6_APK" python3 - <<'PY'
           import hashlib, json, os, re, shutil
           from pathlib import Path
           expected = "d73500da98b7280d7906d3fa828d1857088ff811c623e385e1213ada4f03d4ce"
@@ -120,12 +120,10 @@ jobs:
               found = re.findall(r"certificate sha-256 digest: ([0-9a-f]{64})", report)
               if not found or set(found) != {expected}:
                   raise SystemExit(f"{name} APK signer does not match the verified Zikra signing certificate.")
-          standard = Path(os.environ["STANDARD_APK"])
-          fireos6 = Path(os.environ["FIREOS6_APK"])
           dist = Path("dist")
           dist.mkdir(exist_ok=True)
-          shutil.copyfile(standard, dist / "tv.apk")
-          shutil.copyfile(fireos6, dist / "tv-fireos6.apk")
+          shutil.copyfile(os.environ["STANDARD_APK"], dist / "tv.apk")
+          shutil.copyfile(os.environ["FIREOS6_APK"], dist / "tv-fireos6.apk")
           manifest = {
               "versionName": os.environ["HOME_VERSION_NAME"],
               "versionCode": int(os.environ["HOME_VERSION_CODE"]),
@@ -140,12 +138,6 @@ jobs:
           (dist / ".nojekyll").write_text("", encoding="utf-8")
           print(f"Prepared standard and Fire OS 6 Home TV {manifest['versionName']} ({manifest['versionCode']}).")
           PY
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
-          HOME_VERSION_CODE: ${{ steps.version.outputs.code }}
-          HOME_VERSION_NAME: ${{ steps.version.outputs.name }}
-          STANDARD_APK: ${{ github.workspace }}/launcher/app/build/outputs/apk/standard/publish/app-standard-publish.apk
-          FIREOS6_APK: ${{ github.workspace }}/launcher/app/build/outputs/apk/fireOs6/publish/app-fireOs6-publish.apk
 
       - name: Publish versioned GitHub Release
         env:
