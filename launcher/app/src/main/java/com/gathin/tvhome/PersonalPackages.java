@@ -111,7 +111,7 @@ final class PersonalPackages {
         Context c=context.getApplicationContext();File dest=file(c,target);
         if(dest.isFile()){try{validate(c,dest,target);return dest;}catch(Exception e){if(!dest.delete())throw new IOException("تعذّر استبدال التنزيل السابق");}}
         File dir=dest.getParentFile();if(!dir.isDirectory()&&!dir.mkdirs())throw new IOException("لا توجد مساحة للتنزيل");
-        File temp=new File(dir,dest.getName()+".part");HttpURLConnection conn=connect(target.url);
+        File temp=new File(dir,dest.getName()+"-"+java.util.UUID.randomUUID()+".part");HttpURLConnection conn=connect(target.url);
         try { long total=conn.getContentLengthLong();if(total>MAX_APK)throw new IOException("حجم الملف أكبر من المسموح");
             try(InputStream in=conn.getInputStream();FileOutputStream out=new FileOutputStream(temp)){
                 byte[] buffer=new byte[32768];int n;long count=0,last=0;
