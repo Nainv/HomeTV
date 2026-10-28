@@ -386,8 +386,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private java.util.Map<Integer, String> homeAppKeys = java.util.Collections.emptyMap();
 
     @Override
+    private String homeLanguageAtCreate;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        homeLanguageAtCreate = getSharedPreferences("home_language", MODE_PRIVATE).getString("choice", null);
         setContentView(R.layout.activity_main);
         density = getResources().getDisplayMetrics().density;
         // config.xml, overlaid by config.json from a pushed theme (see Config and tools/theme.sh).
@@ -943,6 +946,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onResume() {
         super.onResume();
+        if (!java.util.Objects.equals(homeLanguageAtCreate,
+                getSharedPreferences("home_language", MODE_PRIVATE).getString("choice", null))) {
+            recreate(); return;
+        }
         LauncherHijackCompatService.onHomeResumed(this);
         if ("home-diagnostics".equals(getIntent().getStringExtra("task"))) {
             getIntent().removeExtra("task");
@@ -3309,7 +3316,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             HomeKeyService.openPowerMenu();
             return;
         }
-        Toast.makeText(this, "فعّل خدمة زر Home من إعداد Home لفتح قائمة إعادة التشغيل بالريموت.",
+        Toast.makeText(this, getString(R.string.home_restart_service),
                 Toast.LENGTH_LONG).show();
         startActivity(new Intent(this, HomeToolsActivity.class));
     }
