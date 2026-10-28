@@ -49,9 +49,7 @@ public final class HomeToolsActivity extends Activity {
         heading.setTextSize(24); heading.setTextColor(Color.WHITE);
         heading.setPadding(dp(16), dp(12), dp(16), dp(12));
         rows.addView(heading);
-        row(rows, R.string.home_enable, () -> setHomeEnabled(true));
-        row(rows, R.string.home_disable, () -> setHomeEnabled(false));
-        row(rows, R.string.home_choose, () -> openSettings(Settings.ACTION_HOME_SETTINGS));
+        row(rows, R.string.home_settings_title, this::chooseHomePlatform);
         row(rows, R.string.home_update, this::checkUpdate);
         row(rows, R.string.home_language, this::chooseLanguage);
         status = new TextView(this);
@@ -109,6 +107,27 @@ public final class HomeToolsActivity extends Activity {
                             dialog.dismiss(); recreate();
                         })
                 .setNegativeButton(R.string.home_cancel, null).show();
+    }
+    private void chooseHomePlatform() {
+        boolean arabic = "ar".equals(getResources().getConfiguration().getLocales().get(0).getLanguage());
+        new AlertDialog.Builder(this).setTitle(R.string.home_settings_title)
+                .setItems(arabic ? new String[]{"Home على الشاشة", "Home على أمازون"}
+                        : new String[]{"Home — Android TV", "Home — Amazon Fire TV"},
+                        (dialog, which) -> platformControls(which == 1))
+                .setNegativeButton(R.string.home_cancel, null).show();
+    }
+    private void platformControls(boolean amazon) {
+        new AlertDialog.Builder(this).setTitle(amazon ? "Home — Amazon Fire TV" : "Home — Android TV")
+                .setItems(new String[]{getString(R.string.home_enable), getString(R.string.home_disable),
+                        getString(R.string.home_choose)}, (dialog, which) -> {
+                    if (which == 2) { openSettings(Settings.ACTION_HOME_SETTINGS); return; }
+                    if (amazon && LauncherHijackCompatService.supported()) {
+                        try { LauncherHijackCompatService.setEnabled(this, which == 0); }
+                        catch (RuntimeException failure) { showError(failure); }
+                    } else {
+                        status.setText(HomeServiceSetup.setEnabled(this, which == 0));
+                    }
+                }).setNegativeButton(R.string.home_cancel, null).show();
     }
     private void setHomeEnabled(boolean enable) {
         status.setText(HomeServiceSetup.setEnabled(this, enable));
