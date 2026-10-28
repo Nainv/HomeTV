@@ -2,6 +2,11 @@ plugins {
     id 'com.android.application'
 }
 
+def homeVersionCode = (project.findProperty('homeVersionCode') ?: '15').toString().toInteger()
+def homeVersionName = (project.findProperty('homeVersionName') ?: '3.6').toString()
+def homeSigningVariables = ['ANDROID_KEYSTORE_FILE', 'ANDROID_KEYSTORE_PASSWORD', 'ANDROID_KEY_ALIAS', 'ANDROID_KEY_PASSWORD']
+def homeSigningReady = homeSigningVariables.every { System.getenv(it) }
+
 android {
     namespace 'com.gathin.tvhome'
     compileSdk 34
@@ -11,8 +16,19 @@ android {
         applicationId providers.gradleProperty('launcherApplicationId').getOrElse('com.gathin.tvhome')
         minSdk 26
         targetSdk 34
-        versionCode 15
-        versionName '3.6'
+        versionCode homeVersionCode
+        versionName homeVersionName
+    }
+
+    signingConfigs {
+        if (homeSigningReady) {
+            create('homeRelease') {
+                storeFile file(System.getenv('ANDROID_KEYSTORE_FILE'))
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
     }
 
     buildTypes {
@@ -23,6 +39,12 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             // Sideloaded over ADB, never published: sign with the debug key so it installs over a debug build.
             signingConfig signingConfigs.debug
+        }
+        if (homeSigningReady) {
+            create('publish') {
+                initWith getByName('release')
+                signingConfig signingConfigs.getByName('homeRelease')
+            }
         }
     }
 
