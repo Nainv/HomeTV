@@ -42,6 +42,10 @@ public final class HomeToolsActivity extends Activity {
                 status.setText("تم إيقاف مسار LauncherHijack.");
             });
         }
+        if ("Amazon".equalsIgnoreCase(android.os.Build.MANUFACTURER)) {
+            button(box,"تفعيل خدمة Home داخل التطبيق",()->setHomeServiceEnabled(true));
+            button(box,"إيقاف خدمة Home الخاصة بالتطبيق",()->setHomeServiceEnabled(false));
+        }
         button(box,"اختبار زر Home",()->{try{startActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));}catch(Exception e){status.setText("تعذّر فتح الشاشة الرئيسية للنظام.");}});
         button(box,"اختيار تطبيق الشاشة الرئيسية",()->openSettings(Settings.ACTION_HOME_SETTINGS));
         button(box,"إعدادات التلفزيون",()->openSettings(Settings.ACTION_SETTINGS));
@@ -65,6 +69,15 @@ public final class HomeToolsActivity extends Activity {
             getIntent().removeExtra("task");
             showHomeDiagnostics();
         }
+    }
+    private void setHomeServiceEnabled(boolean enable) {
+        status.setText(HomeServiceSetup.setEnabled(this, enable));
+        homeStatus.setText(HomeDiagnostics.summary(this));
+        homeStatus.postDelayed(()->{
+            if (!alive()) return;
+            homeStatus.setText(HomeDiagnostics.summary(this));
+            HomeDiagnostics.report(this);
+        }, 2000);
     }
     private void showGplLicense() {
         StringBuilder text=new StringBuilder();
