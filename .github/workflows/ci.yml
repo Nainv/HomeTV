@@ -70,4 +70,8 @@ jobs:
         run: |
           size=$(stat -c %s launcher/app/build/outputs/apk/standard/release/app-standard-release.apk)
           echo "release APK: $((size / 1024)) KB"
-          test "$size" -lt 589824 || { echo "APK is over 576 KB; the launcher targets 1 GB TVs, keep it small"; exit 1; }
+          # This fork includes signed updating and Java API backports for Fire OS 6.
+          test "$size" -lt 1048576 || { echo "Standard APK is over the fork budget of 1 MiB"; exit 1; }
+          fire_size=$(stat -c %s launcher/app/build/outputs/apk/fireOs6/release/app-fireOs6-release.apk)
+          echo "Fire OS 6 APK: $((fire_size / 1024)) KB"
+          test "$fire_size" -lt 1048576 || { echo "Fire OS 6 APK is over the fork budget of 1 MiB"; exit 1; }
