@@ -6,6 +6,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.net.Uri;
+import android.os.Build;
 import androidx.core.content.FileProvider;
 import org.json.JSONObject;
 import java.io.*;
@@ -34,14 +35,18 @@ final class PersonalPackages {
                 "484a5c171c1ddd404aa4008d931ed8cbf937c0360ae3b2ef7bee5af4f97910a5", 1000232);
     }
     static Target latest() throws Exception {
+        boolean fireOs6 = Build.VERSION.SDK_INT < 26;
         HttpURLConnection c=connect(ORIGIN+"/release.json?t="+System.currentTimeMillis());
         try (InputStream in=c.getInputStream(); ByteArrayOutputStream out=new ByteArrayOutputStream()) {
             byte[] b=new byte[2048]; int n;
             while((n=in.read(b))!=-1) { if(out.size()+n>16384)throw new IOException("بيانات التحديث أكبر من المتوقع");out.write(b,0,n); }
             JSONObject j=new JSONObject(out.toString(StandardCharsets.UTF_8.name()));
-            String sha=j.getString("sha256"),url=j.getString("url");long version=j.getLong("versionCode");
+            String sha=j.getString(fireOs6?"fireOs6Sha256":"sha256");
+            String url=j.getString(fireOs6?"fireOs6Url":"url");
+            long version=j.getLong(fireOs6?"fireOs6VersionCode":"versionCode");
+            String versionName=j.getString(fireOs6?"fireOs6VersionName":"versionName");
             if(!UpdateRules.valid(ORIGIN,url,sha,version))throw new IOException("بيانات التحديث غير صالحة");
-            return new Target("تحديث الواجهة "+j.getString("versionName"),SELF_PACKAGE,url,sha,version);
+            return new Target("تحديث الواجهة "+versionName,SELF_PACKAGE,url,sha,version);
         } finally { c.disconnect(); }
     }
     static HttpURLConnection connect(String value) throws Exception {
