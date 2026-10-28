@@ -20,6 +20,18 @@ android {
         versionName homeVersionName
     }
 
+    flavorDimensions += 'device'
+    productFlavors {
+        standard {
+            dimension 'device'
+        }
+        fireOs6 {
+            dimension 'device'
+            // Fire OS 6 is based on Android 7.1 (API 25).
+            minSdk 25
+        }
+    }
+
     signingConfigs {
         if (homeSigningReady) {
             create('homeRelease') {
