@@ -47,7 +47,7 @@ the launcher reads `java.time` in `MainActivity.java`, `Sun.java`, `Festival.jav
 |---|---|---|
 | `MainActivity.java` | `PackageManager.getChangedPackages` | compare the installed package count |
 | `UiFont.java` | `Resources.getFont` | `ResourcesCompat.getFont` |
-| `WallpaperCaptions.java` | `Files.readAllLines(file.toPath())` | a plain `BufferedReader` |
+| `WallpaperCaptions.java` | `BufferedReader` (already applied in this fork) | a plain `BufferedReader` |
 | `WallpaperPlayer.java` | `Bitmap.Config.HARDWARE` | the same bitmap without it, `HARDWARE` being Android 8 and up |
 
 `lintRelease` then reports no NewApi errors on the fork. Home, the dock, the tile menu, the app

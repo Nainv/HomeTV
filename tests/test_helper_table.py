@@ -162,7 +162,7 @@ class HelperTableTest(unittest.TestCase):
     def test_home_key_service_takes_its_lists_before_all_apps(self):
         # The point of the row: an app or gear button is handled even though Home is not ALL_APPS.
         body = method_body(self.java["HomeKeyService"], "onKeyEvent")
-        all_apps = body.find("KEYCODE_ALL_APPS")
+        all_apps = body.rfind("KEYCODE_ALL_APPS")
         # The lookups can be wrapped (#1855 picks a front-app target first), so the map names are searched for.
         for call in ("appScancodes", "isSettingsKey(event)", "appKeys"):
             with self.subTest(call=call):

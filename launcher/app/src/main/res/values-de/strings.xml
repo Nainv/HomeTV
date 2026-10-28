@@ -44,7 +44,7 @@
     <string name="off">Aus</string>
     <string name="enable">Aktivieren</string>
     <string name="dock_edit">Dock bearbeiten</string>
-    <string name="power_menu">Neu starten…</string>
+    <string name="power_menu">Neu starten</string>
     <string name="dock_edit_hint">Wähle den Dock-Platz, den du ändern willst, und drücke OK. Zurück zum Beenden.</string>
     <string name="dock_edit_pick_app">Wähle jetzt die App für diesen Platz und drücke OK. Zurück, um einen anderen Platz zu wählen.</string>
     <string name="tile_add_to_dock">Zum Dock hinzufügen</string>
@@ -70,4 +70,37 @@
         <item quantity="other">%1$d Apps</item>
     </plurals>
     <string name="greeting_with_name">%1$s, %2$s</string>
+    <string name="personal_tools">Home-Einstellungen</string>
+    <string name="menu_tv">Moon TV</string>
+    <string name="menu_zikra">Zikra</string>
+    <string name="home_settings_title">Home-Einstellungen</string>
+    <string name="home_enable">Home aktivieren</string>
+    <string name="home_disable">Home-Dienst stoppen</string>
+    <string name="home_choose">Startbildschirm-App auswählen</string>
+    <string name="home_update">Home aktualisieren</string>
+    <string name="home_language">Sprache der Oberfläche</string>
+    <string name="home_arabic">العربية</string>
+    <string name="home_system_language">Systemsprache</string>
+    <string name="home_cancel">Abbrechen</string>
+    <string name="home_checking">Updates werden gesucht…</string>
+    <string name="home_current">Home ist aktuell.</string>
+    <string name="home_download">%1$s wird heruntergeladen…</string>
+    <string name="home_progress">Download %1$s: %2$s</string>
+    <string name="home_failed">Vorgang fehlgeschlagen: %1$s</string>
+    <string name="home_install_permission">Installation für Home erlauben und zurückkehren. Die Installation wird automatisch fortgesetzt.</string>
+    <string name="home_unavailable">Diese Einstellungsseite ist auf diesem Gerät nicht verfügbar.</string>
+    <string name="home_enabled">Home-Aktivierung gespeichert.</string>
+    <string name="home_disabled">Home-Dienst gestoppt.</string>
+    <string name="home_permission">Einmalige Einrichtung nötig: pm grant %1$s android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="home_service_connected">Home-Dienst verbunden.</string>
+    <string name="home_service_binding">Home aktiviert; der Systemdienst wird verbunden.</string>
+    <string name="home_service_off">Home-Dienst deaktiviert.</string>
+    <string name="home_moon_pending">Die hochgeladene Moon-TV-APK muss noch geprüft und eingebunden werden.</string>
+    <string name="home_update_ready">Home-Update verfügbar</string>
+    <string name="home_update_tap">Zum Installieren auswählen.</string>
+    <string name="home_update_message">Eine neue Home-Version wurde heruntergeladen und geprüft.</string>
+    <string name="home_install">Update installieren</string>
+    <string name="home_later">Später</string>
+    <string name="home_updates_channel">Home-Updates</string>
+    <string name="home_restart_service">Home-Dienst aktivieren, um das Systemmenü zum Neustart zu öffnen.</string>
 </resources>

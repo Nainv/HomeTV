@@ -638,33 +638,34 @@ and a wallpaper.
 <details>
 <summary><b>Launcher settings and the default home</b></summary>
 
-- Click **Settings** for the TV's own settings. Hold OK on it for its menu: **Launcher settings** (with
-  `launcher_settings_button` a click opens those instead and the menu leaves the row out), **Native settings**
-  where the TV ships a settings app of its own beside Android's - Xiaomi China, TCL/FFALCON and Fire OS are
-  in `settings_fallback_components` - because that app holds pages Android's has no row for, such as
-  Xiaomi's Account & Security with the ADB switch; **Module cards** with `module_cards`; **Edit dock** with
-  `dock_row`; **Reorder apps**; and **Restart…** while `HomeKeyService` runs, which opens the system power menu
-  (a launcher may not restart the TV itself). The launcher's own page has these rows, top to bottom:
-  - **Reorder apps**, only with `launcher_settings_button`: OK picks an app up, the arrows move it, Back
-    places it, and Back again finishes.
-  - **Apps per row** 4, 5, 6 or 7; **Rows below dock** 0 to 3, how many rows of tiles stay visible under the
-    dock band; **Dock band opacity** 100%, 70%, 50% or 30%. The last two only do anything while the dock is
-    its own row (`dock_row`, on by default).
-  - **Wallpaper**: one picture from the theme's collection (or its `wallpaper.jpg`), **None**, or **Theme
-    default**. A pick holds that picture and stops the rotation until you choose Theme default, press
-    Follow theme, or push the theme again.
-  - **Animations** on or off, and **Advanced effects** (tile lift, icon zoom and smooth ambient-colour
-    transitions; they may use more memory) once animations are on.
-  - **Open on start**, only with `open_on_start_choice`: Off, or an app that opens instead of Home the first
-    time Home comes up after the TV starts. Once per boot, so Home and Back still reach the launcher.
-  - **Follow theme (reset on-TV choices)**, which clears every choice above. Pushing or resetting a theme
-    clears them too.
-  - **Choose default home** opens Android's home picker, and **TV system settings** the TV's own settings
-    page.
-- **Change the default home:** Launcher settings and the optional Default-home tile
-  (`show_home_settings_shortcut`) open Android's home picker. Choose the original launcher to stop using
-  CleanYourTV as Home, or CleanYourTV to return. The original launcher must be enabled; if the install
-  script disabled it, run the restore script below first. Some TVs provide no home picker.
+This HomeTV fork uses a short Settings click for these six actions, in order:
+
+1. **Moon TV** opens the installed Moon Player, or downloads the supplied, hash-verified APK.
+2. **Zikra** opens the installed app, or downloads Zikratv.apk from its stable GitHub release.
+3. **Home settings** contains Enable Home, Stop Home service, Choose default Home app, Update Home
+   interface, and Arabic/system language. Updates download and verify the APK, then open Android's
+   installer immediately; Android still asks the owner to approve installation. If installer permission
+   is needed, returning from that page continues automatically.
+4. **Edit dock** changes the dock's apps.
+5. **Reorder apps** changes the app order.
+6. **Restart…** opens the system power menu while the Home service is connected.
+
+Hold OK on Settings for the TV's system settings. This route remains available even though the extra
+Native settings row was removed from this fork's short-click menu. Some firmware has no default-home
+picker; in that case the manufacturer settings may be all the device exposes.
+
+Automatic update checks run when Home is used, plus an hourly network-constrained background job
+that Android persists across reboots. Android chooses when the job can run, so this is not an immediate
+server-push notification. A newer verified download generates an update notification.
+
+The Home service is opt-in. The Android 11 Fire TV test confirmed immediate Home-button return after
+binding, but the observed delayed binding after a cold boot needs another physical-device test.
+Diagnostics use device-protected storage so early binding does not access locked credential storage.
+
+The retained legacy appearance-editor source (not another action in the simplified menu) includes
+**Apps per row**: 4, 5, 6 or 7; **Rows below dock**: 0 to 3; **Dock band opacity**:
+100%, 70%, 50% or 30%; **Wallpaper**, **Animations**, **Advanced effects**, **Open on start**,
+**Follow theme (reset on-TV choices)**, **Choose default home**, and **TV system settings**.
 
 </details>
 

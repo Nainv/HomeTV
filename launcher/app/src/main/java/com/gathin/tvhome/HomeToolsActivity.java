@@ -1,120 +1,221 @@
 package com.gathin.tvhome;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.Gravity;
 import android.view.View;
-import android.widget.*;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
 import java.io.File;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-/** Remote-friendly actions; no installation or accessibility permission is accepted on the user's behalf. */
+/** Home controls and explicit download entry points. Installation remains confirmed by Android. */
 public final class HomeToolsActivity extends Activity {
-    private final ExecutorService worker=Executors.newSingleThreadExecutor();
-    private TextView status, homeStatus;private Button install;private File ready;private boolean busy;
-    private boolean alive(){return !isFinishing()&&!isDestroyed();}
-    private int dp(int n){return Math.round(n*getResources().getDisplayMetrics().density);}
-    @Override public void onCreate(Bundle b){super.onCreate(b);
-        ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setBackgroundColor(Color.rgb(13,25,28));
-        LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);box.setPadding(dp(36),dp(18),dp(36),dp(24));box.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);scroll.addView(box);setContentView(scroll);
-        TextView title=new TextView(this);title.setText("تطبيقاتي وإعداد الواجهة");title.setTextColor(Color.WHITE);title.setTextSize(26);box.addView(title);
-        TextView help=new TextView(this);help.setText("ذِكرى يفتح مباشرة إذا كان مثبّتاً. التنزيل والتحديث يحتاجان اتصال إنترنت، والتثبيت يحتاج موافقتك من أندرويد.");help.setTextColor(Color.LTGRAY);help.setTextSize(15);help.setPadding(0,dp(8),0,dp(12));box.addView(help);
-        homeStatus=new TextView(this);homeStatus.setTextColor(Color.LTGRAY);homeStatus.setTextSize(16);homeStatus.setPadding(0,dp(10),0,dp(8));box.addView(homeStatus);
-        button(box,"ذِكرى — فتح أو تنزيل",()->{if(!PersonalPackages.openZikra(this))startDownload(PersonalPackages.zikra());});
-        button(box,"البحث عن تحديث للواجهة",this::checkUpdate);
-        button(box,"تفعيل زر Home وفتح الواجهة عند تشغيل التلفزيون",()->{
-            new android.app.AlertDialog.Builder(this).setTitle("خدمة زر الرئيسية").setMessage("في الصفحة التالية اختر خدمة «زر الرئيسية» التابعة لهذا التطبيق وفعّلها. ضغطة Home واحدة تفتح واجهتنا، و٣ ضغطات متتالية بفاصل أقل من ثلثي ثانية تفتح واجهة النظام الأصلية. الخدمة تقرأ أزرار قائمة الطاقة فقط عند طلب فتحها لتشغيلها بالريموت. اختبر Home والصوت ثم إطفاء وتشغيل التلفزيون. يمكن إيقاف الخدمة من نفس الصفحة.")
-                .setPositiveButton("فتح تسهيلات الاستخدام",(d,w)->openSettings(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-                .setNegativeButton("رجوع",null).show();
-        });
-        if (LauncherHijackCompatService.supported()) {
-            button(box,"تشغيل توافق LauncherHijack لزر Home",()->{
-                try {
-                    LauncherHijackCompatService.setEnabled(this,true);
-                    status.setText("تم تشغيل مراقبة إشارة Home. اضغط الزر الحقيقي بالريموت للاختبار. الضغط المطوّل يبقى للنظام. يمكنك إيقاف التوافق من الزر التالي.");
-                } catch (RuntimeException failure) { status.setText("تعذّر التشغيل: "+failure.getMessage()); }
-            });
-            button(box,"إيقاف توافق LauncherHijack",()->{
-                LauncherHijackCompatService.setEnabled(this,false);
-                status.setText("تم إيقاف مسار LauncherHijack.");
-            });
-        }
-        if ("Amazon".equalsIgnoreCase(android.os.Build.MANUFACTURER)) {
-            button(box,"تفعيل خدمة Home داخل التطبيق",()->setHomeServiceEnabled(true));
-            button(box,"إيقاف خدمة Home الخاصة بالتطبيق",()->setHomeServiceEnabled(false));
-        }
-        button(box,"اختبار زر Home",()->{try{startActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));}catch(Exception e){status.setText("تعذّر فتح الشاشة الرئيسية للنظام.");}});
-        button(box,"اختيار تطبيق الشاشة الرئيسية",()->openSettings(Settings.ACTION_HOME_SETTINGS));
-        button(box,"إعدادات التلفزيون",()->openSettings(Settings.ACTION_SETTINGS));
-        button(box,"حقوق وتراخيص البرامج",()->new android.app.AlertDialog.Builder(this).setTitle("التراخيص").setMessage("HomeTV يتضمن كوداً مشتقاً من LauncherHijack لـBaronKiko والمساهمين. النسخة المدمجة تحت GPLv3، دون ضمان، ويمكن إعادة توزيعها وتعديلها وفق الترخيص. كود CleanYourTV يحتفظ بحقوق Gathin وترخيص MIT، وخط Outfit بترخيص SIL OFL 1.1. المصدر الموافق لكل APK منشور باسم HomeTV-source.tar.gz بجانب ملف التنزيل. ذِكرى تطبيق مستقل.").setPositiveButton("موافق",null).show());
-        status=new TextView(this);status.setTextColor(Color.LTGRAY);status.setTextSize(16);status.setPadding(0,dp(14),0,dp(12));box.addView(status);
-        install=button(box,"تثبيت الملف الجاهز",this::installReady);install.setVisibility(View.GONE);
-        button(box,"عرض ترخيص GPLv3",this::showGplLicense);
-        button(box,"تشخيص زر Home",this::showHomeDiagnostics);
-        button(box,"رجوع للواجهة",this::finish);
-        box.getChildAt(3).requestFocus();
-        if("update".equals(getIntent().getStringExtra("task")))checkUpdate();
-        if("setup".equals(getIntent().getStringExtra("task"))) {
-            Intent z=getPackageManager().getLeanbackLaunchIntentForPackage(PersonalPackages.ZIKRA_PACKAGE);
-            if(z==null)startDownload(PersonalPackages.zikra());
-            else status.setText("ذِكرى مثبّت. استخدم زر ذِكرى لفتحه، وفعّل خدمة Home من الزر أدناه.");
+    private final ExecutorService worker = Executors.newSingleThreadExecutor();
+    private TextView status;
+    private File ready;
+    private PersonalPackages.Target readyTarget;
+    private boolean busy, waitingForInstallPermission;
+    @Override protected void attachBaseContext(Context base) {
+        super.attachBaseContext(LauncherLocale.wrap(base));
+    }
+    private boolean alive() { return !isFinishing() && !isDestroyed(); }
+    private int dp(int n) { return Math.round(n * getResources().getDisplayMetrics().density); }
+    @Override public void onCreate(Bundle saved) {
+        super.onCreate(saved);
+        FrameLayout root = new FrameLayout(this);
+        root.setLayoutDirection(android.text.TextUtils.getLayoutDirectionFromLocale(
+                getResources().getConfiguration().getLocales().get(0)));
+        root.setBackgroundColor(Color.rgb(13, 25, 28));
+        ScrollView scroll = new ScrollView(this);
+        FrameLayout.LayoutParams outer = new FrameLayout.LayoutParams(
+                Math.min(dp(580), getResources().getDisplayMetrics().widthPixels - dp(48)), -2, Gravity.CENTER);
+        outer.topMargin = dp(18); outer.bottomMargin = dp(18);
+        root.addView(scroll, outer);
+        LinearLayout panel = (LinearLayout) getLayoutInflater().inflate(R.layout.popup_inputs, scroll, false);
+        scroll.addView(panel);
+        LinearLayout rows = panel.findViewById(R.id.rows);
+        TextView heading = new TextView(this);
+        heading.setText(R.string.home_settings_title);
+        heading.setTextSize(24); heading.setTextColor(Color.WHITE);
+        heading.setPadding(dp(16), dp(12), dp(16), dp(12));
+        rows.addView(heading);
+        row(rows, R.string.home_enable, () -> setHomeEnabled(true));
+        row(rows, R.string.home_disable, () -> setHomeEnabled(false));
+        row(rows, R.string.home_choose, () -> openSettings(Settings.ACTION_HOME_SETTINGS));
+        row(rows, R.string.home_update, this::checkUpdate);
+        row(rows, R.string.home_language, this::chooseLanguage);
+        status = new TextView(this);
+        status.setTextSize(15); status.setTextColor(Color.LTGRAY);
+        status.setPadding(dp(16), dp(12), dp(16), dp(12));
+        rows.addView(status);
+        setContentView(root);
+        rows.getChildAt(1).requestFocus();
+        panel.setAlpha(0f); panel.setPivotY(0f); panel.setScaleY(0.92f);
+        panel.setTranslationY(-dp(8));
+        panel.animate().alpha(1f).scaleY(1f).translationY(0f)
+                .setDuration(Config.load(this).reducedMotion ? Motion.REDUCED_MS : 220)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator(1.6f)).start();
+        // Licenses remain accessible without adding another settings action.
+        heading.setOnLongClickListener(v -> { showLicense(); return true; });
+        String task = getIntent().getStringExtra("task");
+        if ("update".equals(task)) checkUpdate();
+        else if ("zikra".equals(task) || "setup".equals(task)) openZikra();
+        else if ("moon".equals(task) && !PersonalPackages.openMoon(this)) startDownload(PersonalPackages.moon());
+        else if ("diagnostics".equals(task)) showHomeDiagnostics();
+        if (saved != null && saved.containsKey("download_url")) {
+            PersonalPackages.Target target = new PersonalPackages.Target(
+                    saved.getString("download_label"), saved.getString("download_pkg"),
+                    saved.getString("download_url"), saved.getString("download_sha"),
+                    saved.getLong("download_version"));
+            startDownload(target);
         }
     }
-    @Override protected void onResume(){super.onResume();
-        if(homeStatus!=null)homeStatus.setText(HomeDiagnostics.summary(this));
-        if ("diagnostics".equals(getIntent().getStringExtra("task"))) {
-            getIntent().removeExtra("task");
-            showHomeDiagnostics();
+    private void row(LinearLayout rows, int label, Runnable action) {
+        View row = getLayoutInflater().inflate(R.layout.item_input, rows, false);
+        row.findViewById(R.id.icon).setVisibility(View.GONE);
+        row.findViewById(R.id.dot).setVisibility(View.GONE);
+        row.findViewById(R.id.status).setVisibility(View.GONE);
+        ((TextView) row.findViewById(R.id.title)).setText(label);
+        row.setOnClickListener(v -> action.run());
+        rows.addView(row);
+    }
+    @Override protected void onResume() {
+        super.onResume();
+        if (waitingForInstallPermission && ready != null) {
+            waitingForInstallPermission = false;
+            if (android.os.Build.VERSION.SDK_INT < 26 || getPackageManager().canRequestPackageInstalls())
+                installReady();
         }
     }
-    private void setHomeServiceEnabled(boolean enable) {
+    private void chooseLanguage() {
+        if (busy) return;
+        String choice = getSharedPreferences("home_language", 0).getString("choice", "");
+        new AlertDialog.Builder(this).setTitle(R.string.home_language)
+                .setSingleChoiceItems(new String[]{getString(R.string.home_arabic),
+                        getString(R.string.home_system_language)}, "ar".equals(choice) ? 0 : 1,
+                        (dialog, index) -> {
+                            getSharedPreferences("home_language", 0).edit()
+                                    .putString("choice", index == 0 ? "ar" : "").apply();
+                            dialog.dismiss(); recreate();
+                        })
+                .setNegativeButton(R.string.home_cancel, null).show();
+    }
+    private void setHomeEnabled(boolean enable) {
         status.setText(HomeServiceSetup.setEnabled(this, enable));
-        homeStatus.setText(HomeDiagnostics.summary(this));
-        homeStatus.postDelayed(()->{
-            if (!alive()) return;
-            homeStatus.setText(HomeDiagnostics.summary(this));
-            HomeDiagnostics.report(this);
-        }, 2000);
+        if (LauncherHijackCompatService.supported()) {
+            try { LauncherHijackCompatService.setEnabled(this, enable); }
+            catch (RuntimeException failure) { showError(failure); }
+        }
     }
-    private void showGplLicense() {
-        StringBuilder text=new StringBuilder();
-        try (java.io.BufferedReader reader=new java.io.BufferedReader(new java.io.InputStreamReader(
-                getAssets().open("licenses/LauncherHijack-GPL-3.0.txt"),java.nio.charset.StandardCharsets.UTF_8))) {
-            String line;while((line=reader.readLine())!=null)text.append(line).append('\n');
-        } catch (java.io.IOException failure) { text.append("تعذّر قراءة الترخيص: ").append(failure.getMessage()); }
-        ScrollView scroll=new ScrollView(this);
-        TextView body=new TextView(this);body.setText(text.toString());body.setTextSize(14);
-        body.setPadding(dp(16),dp(12),dp(16),dp(12));scroll.addView(body);
-        new android.app.AlertDialog.Builder(this).setTitle("GNU GPLv3")
-                .setView(scroll).setPositiveButton("إغلاق",null).show();
+    private void openSettings(String action) {
+        try { startActivity(SystemSettings.intent(this, action)); }
+        catch (RuntimeException failure) { status.setText(R.string.home_unavailable); }
+    }
+    private void openZikra() {
+        if (PersonalPackages.openZikra(this) || busy) return;
+        busy = true; status.setText(getString(R.string.home_download, getString(R.string.menu_zikra)));
+        worker.execute(() -> {
+            try {
+                PersonalPackages.Target target = PersonalPackages.zikra();
+                runOnUiThread(() -> { if (alive()) { busy = false; startDownload(target); } });
+            } catch (Exception failure) { showError(failure); }
+        });
+    }
+    private void checkUpdate() {
+        if (busy) return;
+        busy = true; status.setText(R.string.home_checking);
+        worker.execute(() -> {
+            try {
+                PersonalPackages.Target target = PersonalPackages.latest();
+                boolean newer = UpdateRules.newer(target.version, PersonalPackages.installedVersion(this));
+                runOnUiThread(() -> {
+                    if (!alive()) return;
+                    busy = false;
+                    if (newer) startDownload(target);
+                    else status.setText(R.string.home_current);
+                });
+            } catch (Exception failure) { showError(failure); }
+        });
+    }
+    private void startDownload(PersonalPackages.Target target) {
+        if (busy) return;
+        busy = true; ready = null; readyTarget = target;
+        status.setText(getString(R.string.home_download, target.label));
+        worker.execute(() -> {
+            try {
+                File file = PersonalPackages.download(this, target, (n, total) -> runOnUiThread(() -> {
+                    if (alive()) status.setText(getString(R.string.home_progress, target.label,
+                            total > 0 ? (n * 100 / total) + "%" : (n / 1024) + " KB"));
+                }));
+                runOnUiThread(() -> {
+                    if (!alive()) return;
+                    busy = false; ready = file;
+                    installReady();
+                });
+            } catch (Exception failure) { showError(failure); }
+        });
+    }
+    private void installReady() {
+        if (ready == null) return;
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= 26 && !getPackageManager().canRequestPackageInstalls()) {
+                status.setText(R.string.home_install_permission);
+                waitingForInstallPermission = true;
+                startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                        Uri.parse("package:" + getPackageName())));
+                return;
+            }
+            File file = ready;
+            ready = null; readyTarget = null;
+            PersonalPackages.install(this, file);
+        } catch (RuntimeException failure) { showError(failure); }
+    }
+    private void showError(Exception failure) {
+        runOnUiThread(() -> {
+            if (alive()) {
+                busy = false;
+                status.setText(getString(R.string.home_failed, String.valueOf(failure.getMessage())));
+            }
+        });
     }
     private void showHomeDiagnostics() {
         ScrollView scroll = new ScrollView(this);
         TextView report = new TextView(this);
-        report.setText(HomeDiagnostics.report(this));
-        report.setTextColor(Color.WHITE);
-        report.setTextSize(15);
-        report.setTypeface(android.graphics.Typeface.MONOSPACE);
-        report.setTextIsSelectable(true);
-        report.setPadding(dp(16),dp(12),dp(16),dp(12));
-        scroll.setBackgroundColor(Color.rgb(13,25,28));
-        scroll.addView(report);
-        new android.app.AlertDialog.Builder(this).setTitle("تشخيص زر Home")
-                .setView(scroll).setPositiveButton("إغلاق",null)
-                .setNeutralButton("تحديث التقرير",(dialog,which)->showHomeDiagnostics()).show();
+        report.setText(HomeDiagnostics.report(this)); report.setTextIsSelectable(true);
+        report.setPadding(dp(16), dp(12), dp(16), dp(12)); scroll.addView(report);
+        new AlertDialog.Builder(this).setTitle("Home diagnostics").setView(scroll)
+                .setPositiveButton(android.R.string.ok, null).show();
     }
-    private Button button(LinearLayout box,String text,Runnable action){Button b=new Button(this);b.setText(text);b.setAllCaps(false);b.setTextSize(17);b.setPadding(dp(15),dp(7),dp(15),dp(7));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(55));p.topMargin=dp(9);box.addView(b,p);b.setOnClickListener(v->action.run());return b;}
-    private void openSettings(String action){try{startActivity(SystemSettings.intent(this,action));}catch(Exception e){status.setText("صفحة الإعدادات غير متاحة على هذا التلفزيون.");}}
-    private void checkUpdate(){if(busy)return;busy=true;status.setText("جارٍ البحث عن تحديث…");worker.execute(()->{try{PersonalPackages.Target t=PersonalPackages.latest();long v=PersonalPackages.installedVersion(this);runOnUiThread(()->{if(!alive())return;busy=false;if(UpdateRules.newer(t.version,v))startDownload(t);else status.setText("الواجهة عندك على آخر نسخة متاحة.");});}catch(Exception e){showError(e);}});}
-    private void startDownload(PersonalPackages.Target t){if(busy)return;busy=true;ready=null;install.setVisibility(View.GONE);status.setText("جارٍ تنزيل "+t.label+"…");worker.execute(()->{try{File f=PersonalPackages.download(this,t,(n,total)->runOnUiThread(()->{if(alive())status.setText("تنزيل "+t.label+": "+(total>0?(n*100/total)+"٪":(n/1024)+" KB"));}));runOnUiThread(()->{if(!alive())return;busy=false;ready=f;status.setText("الملف جاهز، وتم التحقق منه. اضغط تثبيت للمتابعة.");install.setVisibility(View.VISIBLE);install.requestFocus();});}catch(Exception e){showError(e);}});}
-    private void showError(Exception e){runOnUiThread(()->{if(alive()){busy=false;status.setText("تعذّر الإكمال: "+(e.getMessage()==null?"جرّب مرة أخرى":e.getMessage()));}});}
-    private void installReady(){if(ready==null)return;try{if(android.os.Build.VERSION.SDK_INT>=26&&!getPackageManager().canRequestPackageInstalls()){
-            status.setText("اسمح بالتثبيت لهذا التطبيق، ثم ارجع واضغط «تثبيت الملف الجاهز».");
-            startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,Uri.parse("package:"+getPackageName())));return;
-        }PersonalPackages.install(this,ready);
-        }catch(Exception e){status.setText("تعذّر فتح المثبّت. تأكد من السماح بالتثبيت لهذا التطبيق.");}}
-    @Override protected void onDestroy(){worker.shutdownNow();super.onDestroy();}
+    private void showLicense() {
+        StringBuilder text = new StringBuilder("HomeTV: GPLv3. CleanYourTV: MIT. Outfit: SIL OFL 1.1.\n");
+        try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(
+                getAssets().open("licenses/LauncherHijack-GPL-3.0.txt"), java.nio.charset.StandardCharsets.UTF_8))) {
+            String line; while ((line = reader.readLine()) != null) text.append(line).append('\n');
+        } catch (java.io.IOException failure) { text.append(failure.getMessage()); }
+        ScrollView scroll = new ScrollView(this);
+        TextView body = new TextView(this); body.setText(text); scroll.addView(body);
+        new AlertDialog.Builder(this).setTitle("GNU GPLv3").setView(scroll)
+                .setPositiveButton(android.R.string.ok, null).show();
+    }
+    @Override protected void onSaveInstanceState(Bundle out) {
+        if (readyTarget != null) {
+            out.putString("download_label", readyTarget.label);
+            out.putString("download_pkg", readyTarget.pkg);
+            out.putString("download_url", readyTarget.url);
+            out.putString("download_sha", readyTarget.sha);
+            out.putLong("download_version", readyTarget.version);
+        }
+        super.onSaveInstanceState(out);
+    }
+    @Override protected void onDestroy() { worker.shutdownNow(); super.onDestroy(); }
 }
