@@ -907,6 +907,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        if (intent != null && "home-diagnostics".equals(intent.getStringExtra("task"))) {
+            startActivity(new Intent(this, HomeToolsActivity.class).putExtra("task", "diagnostics"));
+            return;
+        }
         if (openLauncherSettingsIfAsked(intent)) return;
         if (openInputsIfAsked(intent)) return;
         if (intent == null || !intent.hasCategory(Intent.CATEGORY_HOME)) return;
