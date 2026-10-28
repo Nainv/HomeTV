@@ -21,3 +21,12 @@ bench-results/
 *.aab
 launcher/hs_err_pid*.log
 launcher/replay_pid*.log
+
+# Local diagnostics, signing files and Windows metadata are not source files.
+*.hprof
+hs_err_pid*.log
+replay_pid*.log
+*.jks
+*.keystore
+[Dd]esktop.ini
+Thumbs.db
