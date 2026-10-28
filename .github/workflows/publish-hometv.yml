@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: hometv-pages
@@ -131,6 +131,15 @@ jobs:
           (dist / ".nojekyll").write_text("", encoding="utf-8")
           print(f"Prepared Home TV {manifest['versionName']} ({manifest['versionCode']}).")
           PY
+
+      - name: Publish versioned GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HOME_VERSION_NAME: ${{ steps.version.outputs.name }}
+        run: |
+          gh release create "v$HOME_VERSION_NAME" dist/tv.apk \
+            --title "Home TV $HOME_VERSION_NAME" \
+            --notes "Home TV signed update. Stable latest download: https://github.com/Nainv/HomeTV/releases/latest/download/tv.apk"
 
       - name: Upload Pages files
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
