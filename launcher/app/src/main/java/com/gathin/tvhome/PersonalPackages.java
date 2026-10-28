@@ -19,6 +19,7 @@ import java.security.MessageDigest;
 final class PersonalPackages {
     static final String ORIGIN = "https://nainv.github.io/HomeTV";
     static final String ZIKRA_PACKAGE = "com.zikra.tv";
+    static final String MOON_PACKAGE = "com.flextv.livestorex";
     static final String SELF_PACKAGE = "com.gathin.tvhome";
     static final long MAX_APK = 64L * 1024 * 1024;
     static final class Target {
@@ -29,6 +30,11 @@ final class PersonalPackages {
         }
     }
     interface Progress { void bytes(long received, long total); }
+    static Target moon() {
+        return new Target("Moon TV", MOON_PACKAGE,
+                "https://github.com/Nainv/HomeTV/releases/download/Moon/MOON.PLAYER.4K.-.v3.5.apk",
+                "57a5685e775fc6d5da629162b875b82e8e9c5e2dcd1e77c9b87cfeafae4f47fd", 39);
+    }
     static Target zikra() throws Exception {
         // Resolve the current asset digest from the owner's release, so replacement
         // APKs at the stable URL never get blocked by an obsolete hard-coded hash.
@@ -136,9 +142,11 @@ final class PersonalPackages {
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         activity.startActivity(i);
     }
-    static boolean openZikra(android.app.Activity a){
-        Intent i=a.getPackageManager().getLeanbackLaunchIntentForPackage(ZIKRA_PACKAGE);
-        if(i==null)i=a.getPackageManager().getLaunchIntentForPackage(ZIKRA_PACKAGE);
+    static boolean openZikra(android.app.Activity a){return openPackage(a,ZIKRA_PACKAGE);}
+    static boolean openMoon(android.app.Activity a){return openPackage(a,MOON_PACKAGE);}
+    private static boolean openPackage(android.app.Activity a,String pkg){
+        Intent i=a.getPackageManager().getLeanbackLaunchIntentForPackage(pkg);
+        if(i==null)i=a.getPackageManager().getLaunchIntentForPackage(pkg);
         if(i==null)return false;try{a.startActivity(i);return true;}catch(Exception e){return false;}
     }
 }
