@@ -86,7 +86,12 @@ public final class LauncherHijackCompatService extends Service {
         super.onCreate();
         if (!supported() || !enabled(this)) { stopSelf(); return; }
         try {
-            registerReceiver(homeWatcher, new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+            IntentFilter filter = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+            if (Build.VERSION.SDK_INT >= 33) {
+                registerReceiver(homeWatcher, filter, Context.RECEIVER_NOT_EXPORTED);
+            } else {
+                registerReceiver(homeWatcher, filter);
+            }
             registered = true;
             running = true;
             Log.i(TAG, "Home broadcast watcher registered");
