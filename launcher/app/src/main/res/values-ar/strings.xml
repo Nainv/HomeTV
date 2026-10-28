@@ -182,4 +182,8 @@
     <string name="home_later">لاحقًا</string>
     <string name="home_updates_channel">تحديثات Home</string>
     <string name="home_restart_service">فعّل خدمة Home لفتح قائمة إعادة التشغيل بالنظام.</string>
+    <string name="home_screen_title">Home على الشاشة</string>
+    <string name="home_amazon_title">Home على أمازون</string>
+    <string name="home_screen_permission">فعّل «%1$s» في تسهيلات الاستخدام، ثم ارجع إلى Home.</string>
+    <string name="home_screen_disable_permission">أوقف «%1$s» في تسهيلات الاستخدام، ثم ارجع إلى Home.</string>
 </resources>

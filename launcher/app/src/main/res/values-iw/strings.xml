@@ -180,4 +180,8 @@
     <string name="home_later">מאוחר יותר</string>
     <string name="home_updates_channel">עדכוני Home</string>
     <string name="home_restart_service">יש להפעיל את שירות Home כדי לפתוח את תפריט ההפעלה מחדש של המערכת.</string>
+    <string name="home_screen_title">Home ב־Android TV</string>
+    <string name="home_amazon_title">Home ב־Amazon</string>
+    <string name="home_screen_permission">יש להפעיל את ״%1$s״ בהגדרות הנגישות ולחזור אל Home.</string>
+    <string name="home_screen_disable_permission">יש לכבות את ״%1$s״ בהגדרות הנגישות ולחזור אל Home.</string>
 </resources>

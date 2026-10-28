@@ -103,4 +103,8 @@
     <string name="home_later">Später</string>
     <string name="home_updates_channel">Home-Updates</string>
     <string name="home_restart_service">Home-Dienst aktivieren, um das Systemmenü zum Neustart zu öffnen.</string>
+    <string name="home_screen_title">Home auf Android TV</string>
+    <string name="home_amazon_title">Home auf Amazon</string>
+    <string name="home_screen_permission">Aktiviere „%1$s“ in den Bedienungshilfen und kehre dann zu Home zurück.</string>
+    <string name="home_screen_disable_permission">Deaktiviere „%1$s“ in den Bedienungshilfen und kehre dann zu Home zurück.</string>
 </resources>

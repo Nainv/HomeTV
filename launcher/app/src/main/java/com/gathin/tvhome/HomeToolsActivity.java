@@ -24,7 +24,7 @@ public final class HomeToolsActivity extends Activity {
     private TextView status;
     private File ready;
     private PersonalPackages.Target readyTarget;
-    private boolean busy, waitingForInstallPermission;
+    private boolean busy, waitingForInstallPermission, waitingForScreenHome;
     @Override protected void attachBaseContext(Context base) {
         super.attachBaseContext(LauncherLocale.wrap(base));
     }
@@ -70,6 +70,7 @@ public final class HomeToolsActivity extends Activity {
         else if ("zikra".equals(task) || "setup".equals(task)) openZikra();
         else if ("moon".equals(task) && !PersonalPackages.openMoon(this)) startDownload(PersonalPackages.moon());
         else if ("diagnostics".equals(task)) showHomeDiagnostics();
+        waitingForScreenHome = saved != null && saved.getBoolean("screen_home_settings", false);
         if (saved != null && saved.containsKey("download_url")) {
             PersonalPackages.Target target = new PersonalPackages.Target(
                     saved.getString("download_label"), saved.getString("download_pkg"),
@@ -89,6 +90,11 @@ public final class HomeToolsActivity extends Activity {
     }
     @Override protected void onResume() {
         super.onResume();
+        if (waitingForScreenHome) status.postDelayed(() -> {
+            if (alive()) status.setText(HomeKeyService.isConnected() ? R.string.home_service_connected
+                    : HomeDiagnostics.selected(this) ? R.string.home_service_binding
+                    : R.string.home_service_off);
+        }, 300);
         if (waitingForInstallPermission && ready != null) {
             waitingForInstallPermission = false;
             if (android.os.Build.VERSION.SDK_INT < 26 || getPackageManager().canRequestPackageInstalls())
@@ -109,19 +115,18 @@ public final class HomeToolsActivity extends Activity {
                 .setNegativeButton(R.string.home_cancel, null).show();
     }
     private void chooseHomePlatform() {
-        boolean arabic = "ar".equals(getResources().getConfiguration().getLocales().get(0).getLanguage());
         new AlertDialog.Builder(this).setTitle(R.string.home_settings_title)
-                .setItems(arabic ? new String[]{"Home على الشاشة", "Home على أمازون"}
-                        : new String[]{"Home — Android TV", "Home — Amazon Fire TV"},
+                .setItems(new String[]{getString(R.string.home_screen_title), getString(R.string.home_amazon_title)},
                         (dialog, which) -> platformControls(which == 1))
                 .setNegativeButton(R.string.home_cancel, null).show();
     }
     private void platformControls(boolean amazon) {
-        new AlertDialog.Builder(this).setTitle(amazon ? "Home — Amazon Fire TV" : "Home — Android TV")
+        new AlertDialog.Builder(this).setTitle(amazon ? R.string.home_amazon_title : R.string.home_screen_title)
                 .setItems(new String[]{getString(R.string.home_enable), getString(R.string.home_disable),
                         getString(R.string.home_choose)}, (dialog, which) -> {
                     if (which == 2) { openSettings(Settings.ACTION_HOME_SETTINGS); return; }
-                    if (amazon && LauncherHijackCompatService.supported()) {
+                    if (!amazon) { configureScreenHome(which == 0); return; }
+                    if (LauncherHijackCompatService.supported()) {
                         try { LauncherHijackCompatService.setEnabled(this, which == 0); }
                         catch (RuntimeException failure) { showError(failure); }
                     } else {
@@ -129,11 +134,22 @@ public final class HomeToolsActivity extends Activity {
                     }
                 }).setNegativeButton(R.string.home_cancel, null).show();
     }
-    private void setHomeEnabled(boolean enable) {
-        status.setText(HomeServiceSetup.setEnabled(this, enable));
-        if (LauncherHijackCompatService.supported()) {
-            try { LauncherHijackCompatService.setEnabled(this, enable); }
-            catch (RuntimeException failure) { showError(failure); }
+    private void configureScreenHome(boolean enable) {
+        // Normal TV setup uses the system consent page, never a privileged ADB grant.
+        if (!enable && HomeKeyService.disableFromSettings()) {
+            waitingForScreenHome = false;
+            status.setText(R.string.home_disabled);
+            return;
+        }
+        waitingForScreenHome = true;
+        status.setText(getString(enable ? R.string.home_screen_permission
+                : R.string.home_screen_disable_permission, getString(R.string.home_key_name)));
+        try {
+            // Start the standard page directly; Android package visibility can hide
+            // its handler from resolveActivity even when launching it is allowed.
+            startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
+        } catch (RuntimeException unavailable) {
+            openSettings(Settings.ACTION_ACCESSIBILITY_SETTINGS);
         }
     }
     private void openSettings(String action) {
@@ -227,6 +243,7 @@ public final class HomeToolsActivity extends Activity {
                 .setPositiveButton(android.R.string.ok, null).show();
     }
     @Override protected void onSaveInstanceState(Bundle out) {
+        out.putBoolean("screen_home_settings", waitingForScreenHome);
         if (readyTarget != null) {
             out.putString("download_label", readyTarget.label);
             out.putString("download_pkg", readyTarget.pkg);
