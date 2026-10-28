@@ -17,6 +17,7 @@ import java.security.MessageDigest;
 /** Personal-fork downloads: fixed HTTPS origin, pinned hashes and package identity, OS-confirmed install. */
 final class PersonalPackages {
     static final String ORIGIN = "https://nainv.github.io/HomeTV";
+    private static final String ZIKRA_ORIGIN = "https://tvhome-philips.funchair515.chatgpt.site";
     static final String ZIKRA_PACKAGE = "com.zikra.tv";
     static final String SELF_PACKAGE = "com.gathin.tvhome";
     static final long MAX_APK = 64L * 1024 * 1024;
@@ -29,7 +30,7 @@ final class PersonalPackages {
     }
     interface Progress { void bytes(long received, long total); }
     static Target zikra() {
-        return new Target("ذِكرى 1.0.5", ZIKRA_PACKAGE, ORIGIN+"/zikra.apk",
+        return new Target("ذِكرى 1.0.5", ZIKRA_PACKAGE, ZIKRA_ORIGIN+"/zikra.apk",
                 "484a5c171c1ddd404aa4008d931ed8cbf937c0360ae3b2ef7bee5af4f97910a5", 1000232);
     }
     static Target latest() throws Exception {
@@ -45,7 +46,9 @@ final class PersonalPackages {
     }
     static HttpURLConnection connect(String value) throws Exception {
         URL url=new URL(value);
-        if(!"https".equals(url.getProtocol())||!new URL(ORIGIN).getHost().equals(url.getHost()))
+        if(!"https".equals(url.getProtocol())
+                || (!new URL(ORIGIN).getHost().equals(url.getHost())
+                && !new URL(ZIKRA_ORIGIN).getHost().equals(url.getHost())))
             throw new IOException("مصدر التنزيل غير مسموح");
         HttpURLConnection c=(HttpURLConnection)url.openConnection();c.setInstanceFollowRedirects(false);
         c.setConnectTimeout(20000);c.setReadTimeout(30000);c.setUseCaches(false);
