@@ -61,13 +61,13 @@ jobs:
         with:
           packages: platforms;android-34 build-tools;34.0.0
       - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
-      - name: Unit tests, lint and release build
+      - name: Unit tests, lint and release builds
         working-directory: launcher
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon testReleaseUnitTest lintRelease assembleRelease
+          ./gradlew --no-daemon testStandardReleaseUnitTest lintStandardRelease lintFireOs6Release assembleStandardRelease assembleFireOs6Release
       - name: The launcher stays small
         run: |
-          size=$(stat -c %s launcher/app/build/outputs/apk/release/app-release.apk)
+          size=$(stat -c %s launcher/app/build/outputs/apk/standard/release/app-standard-release.apk)
           echo "release APK: $((size / 1024)) KB"
           test "$size" -lt 589824 || { echo "APK is over 576 KB; the launcher targets 1 GB TVs, keep it small"; exit 1; }
