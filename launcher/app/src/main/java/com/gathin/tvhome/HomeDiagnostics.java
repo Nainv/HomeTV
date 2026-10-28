@@ -21,9 +21,15 @@ final class HomeDiagnostics {
     private static final String PREFS = "home_diagnostics";
     private HomeDiagnostics() { }
 
+    private static android.content.SharedPreferences preferences(Context context) {
+        // HomeKeyService is directBootAware. Credential storage is unavailable
+        // during early binding, before ACTION_USER_UNLOCKED.
+        return context.createDeviceProtectedStorageContext().getSharedPreferences(PREFS, 0);
+    }
+
     static void phase(Context context, String phase, Throwable failure) {
         String detail = failure == null ? "" : Log.getStackTraceString(failure);
-        android.content.SharedPreferences.Editor edit = context.getSharedPreferences(PREFS, 0).edit()
+        android.content.SharedPreferences.Editor edit = preferences(context).edit()
                 .putString("phase", phase).putLong("time", System.currentTimeMillis());
         if (failure != null) edit.putString("error", detail).putLong("errorTime", System.currentTimeMillis());
         edit.commit();
@@ -86,7 +92,7 @@ final class HomeDiagnostics {
             ResolveInfo home = pm.resolveActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME),
                     PackageManager.MATCH_DEFAULT_ONLY);
             out.append("\ndefaultHome=").append(home == null ? "none" : home.activityInfo.packageName);
-            android.content.SharedPreferences prefs = context.getSharedPreferences(PREFS, 0);
+            android.content.SharedPreferences prefs = preferences(context);
             out.append("\nlastPhase=").append(prefs.getString("phase", "never-created"))
                     .append("\nphaseTime=").append(prefs.getLong("time", 0))
                     .append("\nlastError=").append(prefs.getString("error", ""));
