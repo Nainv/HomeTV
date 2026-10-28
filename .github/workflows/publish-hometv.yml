@@ -83,7 +83,7 @@ jobs:
           keytool -list -keystore "$KEYSTORE_PATH" -storepass "$ANDROID_KEYSTORE_PASSWORD" -alias "$ANDROID_KEY_ALIAS" >/dev/null
           echo "path=$KEYSTORE_PATH" >> "$GITHUB_OUTPUT"
 
-      - name: Build signed APK
+      - name: Build signed Home TV APKs
         working-directory: launcher
         env:
           ANDROID_KEYSTORE_FILE: ${{ steps.keystore.outputs.path }}
@@ -92,54 +92,69 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assemblePublish \
+          ./gradlew --no-daemon assembleStandardPublish assembleFireOs6Publish \
             -PhomeVersionCode=${{ steps.version.outputs.code }} \
             -PhomeVersionName=${{ steps.version.outputs.name }}
 
-      - name: Verify APK signature and prepare update files
+      - name: Verify signatures and prepare update files
         shell: bash
         env:
           HOME_VERSION_CODE: ${{ steps.version.outputs.code }}
           HOME_VERSION_NAME: ${{ steps.version.outputs.name }}
         run: |
           set -euo pipefail
-          APK="launcher/app/build/outputs/apk/publish/app-publish.apk"
-          test -s "$APK"
+          STANDARD_APK="$(find launcher/app/build/outputs/apk/standard/publish -type f -name '*.apk' | head -n 1)"
+          FIREOS6_APK="$(find launcher/app/build/outputs/apk/fireOs6/publish -type f -name '*.apk' | head -n 1)"
+          test -s "$STANDARD_APK"
+          test -s "$FIREOS6_APK"
           APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
           test -n "$APKSIGNER"
-          "$APKSIGNER" verify --verbose --print-certs "$APK" | tee "$RUNNER_TEMP/home-tv-apk-signature.txt"
+          "$APKSIGNER" verify --verbose --print-certs "$STANDARD_APK" | tee "$RUNNER_TEMP/home-tv-standard-signature.txt"
+          "$APKSIGNER" verify --verbose --print-certs "$FIREOS6_APK" | tee "$RUNNER_TEMP/home-tv-fireos6-signature.txt"
           python3 - <<'PY'
-          import os, re
+          import hashlib, json, os, re, shutil
           from pathlib import Path
           expected = "d73500da98b7280d7906d3fa828d1857088ff811c623e385e1213ada4f03d4ce"
-          report = (Path(os.environ["RUNNER_TEMP"]) / "home-tv-apk-signature.txt").read_text().lower()
-          found = re.findall(r"certificate sha-256 digest: ([0-9a-f]{64})", report)
-          if not found or set(found) != {expected}:
-              raise SystemExit("APK signer does not match the verified Zikra signing certificate.")
-          apk = Path("launcher/app/build/outputs/apk/publish/app-publish.apk")
+          for name in ("standard", "fireos6"):
+              report = (Path(os.environ["RUNNER_TEMP"]) / f"home-tv-{name}-signature.txt").read_text().lower()
+              found = re.findall(r"certificate sha-256 digest: ([0-9a-f]{64})", report)
+              if not found or set(found) != {expected}:
+                  raise SystemExit(f"{name} APK signer does not match the verified Zikra signing certificate.")
+          standard = Path(os.environ["STANDARD_APK"])
+          fireos6 = Path(os.environ["FIREOS6_APK"])
           dist = Path("dist")
           dist.mkdir(exist_ok=True)
-          (dist / "tv.apk").write_bytes(apk.read_bytes())
-          import hashlib, json
+          shutil.copyfile(standard, dist / "tv.apk")
+          shutil.copyfile(fireos6, dist / "tv-fireos6.apk")
           manifest = {
               "versionName": os.environ["HOME_VERSION_NAME"],
               "versionCode": int(os.environ["HOME_VERSION_CODE"]),
               "url": "https://nainv.github.io/HomeTV/tv.apk",
               "sha256": hashlib.sha256((dist / "tv.apk").read_bytes()).hexdigest(),
+              "fireOs6VersionName": os.environ["HOME_VERSION_NAME"],
+              "fireOs6VersionCode": int(os.environ["HOME_VERSION_CODE"]),
+              "fireOs6Url": "https://nainv.github.io/HomeTV/tv-fireos6.apk",
+              "fireOs6Sha256": hashlib.sha256((dist / "tv-fireos6.apk").read_bytes()).hexdigest(),
           }
           (dist / "release.json").write_text(json.dumps(manifest), encoding="utf-8")
           (dist / ".nojekyll").write_text("", encoding="utf-8")
-          print(f"Prepared Home TV {manifest['versionName']} ({manifest['versionCode']}).")
+          print(f"Prepared standard and Fire OS 6 Home TV {manifest['versionName']} ({manifest['versionCode']}).")
           PY
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          HOME_VERSION_CODE: ${{ steps.version.outputs.code }}
+          HOME_VERSION_NAME: ${{ steps.version.outputs.name }}
+          STANDARD_APK: ${{ github.workspace }}/launcher/app/build/outputs/apk/standard/publish/app-standard-publish.apk
+          FIREOS6_APK: ${{ github.workspace }}/launcher/app/build/outputs/apk/fireOs6/publish/app-fireOs6-publish.apk
 
       - name: Publish versioned GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           HOME_VERSION_NAME: ${{ steps.version.outputs.name }}
         run: |
-          gh release create "v$HOME_VERSION_NAME" dist/tv.apk \
+          gh release create "v$HOME_VERSION_NAME" dist/tv.apk dist/tv-fireos6.apk \
             --title "Home TV $HOME_VERSION_NAME" \
-            --notes "Home TV signed update. Stable latest download: https://github.com/Nainv/HomeTV/releases/latest/download/tv.apk"
+            --notes "Home TV signed updates. Stable downloads: standard https://github.com/Nainv/HomeTV/releases/latest/download/tv.apk ; Fire OS 6 (Android 7.1) https://github.com/Nainv/HomeTV/releases/latest/download/tv-fireos6.apk"
 
       - name: Upload Pages files
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
