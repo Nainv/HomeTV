@@ -54,7 +54,7 @@ public final class LauncherHijackCompatService extends Service {
                 } else {
                     UsageStatsManager manager = (UsageStatsManager) getSystemService(USAGE_STATS_SERVICE);
                     UsageEvents events = manager == null ? null
-                            : manager.queryEvents(Math.max(usageCursor, now - 2000), now);
+                            : manager.queryEvents(now - 4000, now);
                     UsageEvents.Event event = new UsageEvents.Event();
                     String latestPackage = null;
                     String latestClass = null;
@@ -78,7 +78,7 @@ public final class LauncherHijackCompatService extends Service {
                             && (latestClass.endsWith(".HomeActivity_vNext")
                                 || latestClass.endsWith(".HomeActivity"))
                             && (lastUsageLaunch == 0
-                                || SystemClock.elapsedRealtime() - lastUsageLaunch >= 6000)) {
+                                || SystemClock.elapsedRealtime() - lastUsageLaunch >= 1500)) {
                         lastUsageLaunch = SystemClock.elapsedRealtime();
                         getSharedPreferences(PREFS, 0).edit()
                                 .putLong("detected_delay_ms", Math.max(0, now - latestTime))
@@ -86,22 +86,54 @@ public final class LauncherHijackCompatService extends Service {
                                 .putLong("launch_delay_ms", -1).apply();
                         getSharedPreferences(PREFS, 0).edit()
                                 .putLong("home_time", System.currentTimeMillis()).apply();
-                        Intent open = new Intent(LauncherHijackCompatService.this, MainActivity.class)
-                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP
-                                        | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                        startActivity(open);
-                        getSharedPreferences(PREFS, 0).edit()
-                                .putString("result", "usage-home-launch-request-sent")
-                                .putString("error", "").apply();
+                        bringExistingHomeForward();
                     }
                 }
             } catch (RuntimeException failure) {
                 getSharedPreferences(PREFS, 0).edit().putString("usage_status", "query-failed")
                         .putString("error", Log.getStackTraceString(failure)).apply();
             }
-            if (running) usageHandler.postDelayed(this, 350);
+            if (running) usageHandler.postDelayed(this, 250);
         }
     };
+
+    /**
+     * Reuse only our live MainActivity task. Starting a new activity after HOME can
+     * be queued by Fire OS; AppTask.moveToFront uses the existing task instead.
+     * No system package is disabled and no other application's task is touched.
+     */
+    private void bringExistingHomeForward() {
+        android.app.ActivityManager activities =
+                (android.app.ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        if (activities != null) {
+            for (android.app.ActivityManager.AppTask task : activities.getAppTasks()) {
+                android.app.ActivityManager.RecentTaskInfo info = task.getTaskInfo();
+                if (info.baseActivity == null || info.topActivity == null
+                        || !getPackageName().equals(info.baseActivity.getPackageName())
+                        || !MainActivity.class.getName().equals(info.baseActivity.getClassName())
+                        || !MainActivity.class.getName().equals(info.topActivity.getClassName())) continue;
+                try {
+                    task.moveToFront();
+                    getSharedPreferences(PREFS, 0).edit()
+                            .putString("result", "existing-home-task-move-request-sent")
+                            .putString("error", "").apply();
+                    return;
+                } catch (RuntimeException failure) {
+                    getSharedPreferences(PREFS, 0).edit()
+                            .putString("error", Log.getStackTraceString(failure)).apply();
+                    break;
+                }
+            }
+        }
+        // Cold start or Home settings open: retain the normal explicit launch.
+        // This fallback may still incur the platform's Home app-switch delay.
+        Intent open = new Intent(this, MainActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        startActivity(open);
+        getSharedPreferences(PREFS, 0).edit()
+                .putString("result", "no-live-home-task-start-fallback").apply();
+    }
 
     static boolean supported() {
         return "Amazon".equalsIgnoreCase(Build.MANUFACTURER) && Build.VERSION.SDK_INT == 25;
