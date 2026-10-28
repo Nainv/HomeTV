@@ -29,13 +29,13 @@ final class PersonalUpdates {
         Context context=activity.getApplicationContext();SharedPreferences prefs=context.getSharedPreferences("personal_updates",0);
         String pending=prefs.getString("ready","");
         if(!pending.isEmpty())try{
-            JSONObject j=new JSONObject(pending);PersonalPackages.Target t=new PersonalPackages.Target("تحديث الواجهة",PersonalPackages.SELF_PACKAGE,j.getString("url"),j.getString("sha"),j.getLong("version"));
+            JSONObject j=new JSONObject(pending);PersonalPackages.Target t=new PersonalPackages.Target(activity.getString(R.string.home_update),PersonalPackages.SELF_PACKAGE,j.getString("url"),j.getString("sha"),j.getLong("version"));
             if(UpdateRules.valid(PersonalPackages.ORIGIN,t.url,t.sha,t.version)&&UpdateRules.newer(t.version,PersonalPackages.installedVersion(context))&&PersonalPackages.file(context,t).isFile()){
                 showReady(activity,t);return;
             }
             prefs.edit().remove("ready").apply();
         }catch(Exception e){prefs.edit().remove("ready").apply();}
-        long now=System.currentTimeMillis(),last=prefs.getLong("last",0);if(now>=last&&now-last<24L*60*60*1000)return;
+        long now=System.currentTimeMillis(),last=prefs.getLong("last",0);if(now>=last&&now-last<15L*60*1000)return;
         prefs.edit().putLong("last",now).apply();checking=true;WeakReference<Activity> ref=new WeakReference<>(activity);
         WORKER.execute(()->{try{
             PersonalPackages.Target t=PersonalPackages.latest();
@@ -62,25 +62,25 @@ final class PersonalUpdates {
         NotificationManager manager=(NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
         if(manager==null||(Build.VERSION.SDK_INT>=24&&!manager.areNotificationsEnabled())){prompt(a);return;}
         if(prefs.getLong("notified_version",0)==t.version)return;
-        if(Build.VERSION.SDK_INT>=26)manager.createNotificationChannel(new NotificationChannel(CHANNEL_ID,"تحديثات Home TV",NotificationManager.IMPORTANCE_DEFAULT));
+        if(Build.VERSION.SDK_INT>=26)manager.createNotificationChannel(new NotificationChannel(CHANNEL_ID,a.getString(R.string.home_updates_channel),NotificationManager.IMPORTANCE_DEFAULT));
         Intent open=new Intent(context,HomeToolsActivity.class).putExtra("task","update").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP);
         int flags=PendingIntent.FLAG_UPDATE_CURRENT;
         if(Build.VERSION.SDK_INT>=23)flags|=PendingIntent.FLAG_IMMUTABLE;
         PendingIntent pending=PendingIntent.getActivity(context,NOTIFICATION_ID,open,flags);
         Notification.Builder builder=Build.VERSION.SDK_INT>=26?new Notification.Builder(context,CHANNEL_ID):new Notification.Builder(context);
         Notification notification=builder.setSmallIcon(android.R.drawable.stat_sys_download_done)
-                .setContentTitle("تحديث Home TV جاهز")
-                .setContentText("اضغط لفتح التحديث ومتابعة تثبيته.")
+                .setContentTitle(a.getString(R.string.home_update_ready))
+                .setContentText(a.getString(R.string.home_update_tap))
                 .setCategory(Notification.CATEGORY_STATUS).setAutoCancel(true).setContentIntent(pending)
                 .setPriority(Notification.PRIORITY_DEFAULT).build();
         manager.notify(NOTIFICATION_ID,notification);
         prefs.edit().putLong("notified_version",t.version).apply();
     }
     private static synchronized void prompt(Activity a){if(showing||a.isFinishing()||a.isDestroyed())return;showing=true;
-        AlertDialog d=new AlertDialog.Builder(a).setTitle("تحديث الواجهة جاهز")
-                .setMessage("تم تنزيل نسخة أحدث والتحقق منها. افتح صفحة التحديث لإكمال التثبيت بموافقتك.")
-                .setPositiveButton("متابعة التثبيت",(dialog,w)->a.startActivity(new Intent(a,HomeToolsActivity.class).putExtra("task","update")))
-                .setNegativeButton("لاحقاً",(dialog,w)->a.getSharedPreferences("personal_updates",0).edit().remove("ready").apply()).create();
+        AlertDialog d=new AlertDialog.Builder(a).setTitle(R.string.home_update_ready)
+                .setMessage(R.string.home_update_message)
+                .setPositiveButton(R.string.home_install,(dialog,w)->a.startActivity(new Intent(a,HomeToolsActivity.class).putExtra("task","update")))
+                .setNegativeButton(R.string.home_later,(dialog,w)->a.getSharedPreferences("personal_updates",0).edit().remove("ready").apply()).create();
         d.setOnDismissListener(dialog->{synchronized(PersonalUpdates.class){showing=false;}});d.show();
     }
 }
