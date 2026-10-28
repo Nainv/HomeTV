@@ -13,8 +13,7 @@ final class HomeServiceSetup {
     static String setEnabled(Context context, boolean enable) {
         if (context.checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS)
                 != PackageManager.PERMISSION_GRANTED) {
-            return "يلزم منح الصلاحية مرة واحدة من اللابتوب:\npm grant "
-                    + context.getPackageName() + " android.permission.WRITE_SECURE_SETTINGS";
+            return context.getString(R.string.home_permission, context.getPackageName());
         }
         ComponentName own = new ComponentName(context, HomeKeyService.class);
         String previous = Settings.Secure.getString(context.getContentResolver(),
@@ -37,8 +36,8 @@ final class HomeServiceSetup {
                     Settings.Secure.ACCESSIBILITY_ENABLED, 0) != 1)
                 throw new IllegalStateException("النظام لم يحتفظ بالتفعيل العام.");
             return enable
-                    ? "تم حفظ تفعيل خدمة Home. انتظر لحظات ثم اضغط زر Home الحقيقي بالريموت. ستظهر حالة الربط أدناه."
-                    : "تم إيقاف خدمة Home الخاصة بتطبيقنا؛ الخدمات الأخرى محفوظة.";
+                    ? context.getString(R.string.home_enabled)
+                    : context.getString(R.string.home_disabled);
         } catch (RuntimeException failure) {
             try {
                 Settings.Secure.putString(context.getContentResolver(),
