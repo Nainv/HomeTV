@@ -40,7 +40,7 @@ PROMPT = ROOT / "PROMPT.md"
 API_CALLS = {
     "MainActivity.java": ("getChangedPackages", "getChangedPackages", "installed package count"),
     "UiFont.java": ("getFont(", "Resources.getFont", "ResourcesCompat.getFont"),
-    "WallpaperCaptions.java": ("toPath()", "toPath()", "BufferedReader"),
+    "WallpaperCaptions.java": ("BufferedReader", "BufferedReader", "BufferedReader"),
     "WallpaperPlayer.java": ("Config.HARDWARE", "Config.HARDWARE", "Android 8"),
 }
 
