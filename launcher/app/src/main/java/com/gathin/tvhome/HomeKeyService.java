@@ -208,9 +208,10 @@ public class HomeKeyService extends AccessibilityService {
         frontAppScancodes = RemoteKeys.parseFrontAppScancodes(config.appKeys);
         boolean watchFront = !frontAppKeys.isEmpty() || !frontAppScancodes.isEmpty();
         stockHome.clear();
-        stockHomePackage = config.stockHomeRedirect;
-        if (!config.stockHomeRedirect.isEmpty()) {
-            Intent home = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).setPackage(config.stockHomeRedirect);
+        stockHomePackage = "Amazon".equalsIgnoreCase(Build.MANUFACTURER)
+                ? "com.amazon.tv.launcher" : config.stockHomeRedirect;
+        if (!stockHomePackage.isEmpty()) {
+            Intent home = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).setPackage(stockHomePackage);
             for (ResolveInfo ri : getPackageManager().queryIntentActivities(home, PackageManager.MATCH_DISABLED_COMPONENTS)) {
                 stockHome.add(ri.activityInfo.name);
             }
@@ -468,6 +469,7 @@ public class HomeKeyService extends AccessibilityService {
      *  until that task goes (a restart or a reinstall). With this launcher or Android's chooser as Home, openHome
      *  keeps the Home intent. */
     private boolean stockHomeStays() {
+        if ("Amazon".equalsIgnoreCase(Build.MANUFACTURER)) return true;
         if (stockHome.isEmpty() || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return false;
         ResolveInfo home = getPackageManager().resolveActivity(
                 new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), PackageManager.MATCH_DEFAULT_ONLY);
