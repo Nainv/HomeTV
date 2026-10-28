@@ -25,6 +25,7 @@ final class PersonalUpdates {
     private static final int NOTIFICATION_ID=7301, PERMISSION_REQUEST=7302;
     private static boolean checking,showing;
     static synchronized void check(Activity activity){
+        scheduleBackgroundChecks(activity);
         if(checking||showing)return;
         Context context=activity.getApplicationContext();SharedPreferences prefs=context.getSharedPreferences("personal_updates",0);
         String pending=prefs.getString("ready","");
@@ -48,6 +49,61 @@ final class PersonalUpdates {
         }catch(Exception ignored){/* Offline: normal Home usage must stay uninterrupted. */}
         finally{synchronized(PersonalUpdates.class){checking=false;}}});
     }
+
+    static void scheduleBackgroundChecks(Context context) {
+        android.app.job.JobScheduler scheduler = (android.app.job.JobScheduler)
+                context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+        if (scheduler == null || scheduler.getPendingJob(7303) != null) return;
+        scheduler.schedule(new android.app.job.JobInfo.Builder(7303,
+                new android.content.ComponentName(context, HomeUpdateJob.class))
+                .setRequiredNetworkType(android.app.job.JobInfo.NETWORK_TYPE_ANY)
+                .setPeriodic(60L * 60 * 1000).setPersisted(true).build());
+    }
+    static synchronized java.util.concurrent.Future<?> checkBackground(Context base, Runnable finished) {
+        if (checking) return null;
+        checking = true;
+        Context context = LauncherLocale.wrap(base.getApplicationContext());
+        return WORKER.submit(() -> {
+            try {
+                PersonalPackages.Target target = PersonalPackages.latest();
+                if (UpdateRules.newer(target.version, PersonalPackages.installedVersion(context))) {
+                    PersonalPackages.download(context, target, (n, total) -> { });
+                    JSONObject pending = new JSONObject().put("url", target.url)
+                            .put("sha", target.sha).put("version", target.version);
+                    context.getSharedPreferences("personal_updates", 0).edit()
+                            .putString("ready", pending.toString()).apply();
+                    backgroundNotice(context, target);
+                }
+            } catch (Exception ignored) {
+                // Offline or interrupted: retain the next periodic check and normal foreground check.
+            } finally {
+                synchronized (PersonalUpdates.class) { checking = false; }
+                finished.run();
+            }
+        });
+    }
+    private static void backgroundNotice(Context context, PersonalPackages.Target target) {
+        SharedPreferences prefs = context.getSharedPreferences("personal_updates", 0);
+        if (prefs.getLong("notified_version", 0) == target.version) return;
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (manager == null || !manager.areNotificationsEnabled()) return;
+        if (Build.VERSION.SDK_INT >= 33 && context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) return;
+        if (Build.VERSION.SDK_INT >= 26) manager.createNotificationChannel(new NotificationChannel(
+                CHANNEL_ID, context.getString(R.string.home_updates_channel), NotificationManager.IMPORTANCE_DEFAULT));
+        Intent open = new Intent(context, HomeToolsActivity.class).putExtra("task", "update")
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent action = PendingIntent.getActivity(context, NOTIFICATION_ID, open,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        Notification notification = new androidx.core.app.NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(android.R.drawable.stat_sys_download_done)
+                .setContentTitle(context.getString(R.string.home_update_ready))
+                .setContentText(context.getString(R.string.home_update_tap))
+                .setAutoCancel(true).setContentIntent(action).build();
+        manager.notify(NOTIFICATION_ID, notification);
+        prefs.edit().putLong("notified_version", target.version).apply();
+    }
+
     private static synchronized void showReady(Activity a,PersonalPackages.Target t){
         if(a.isFinishing()||a.isDestroyed())return;
         Context context=a.getApplicationContext();SharedPreferences prefs=context.getSharedPreferences("personal_updates",0);
