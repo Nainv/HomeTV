@@ -152,7 +152,37 @@
     <!-- Cinematic top shelf (cinematic_home): the line under the focused dock app's name; %1$s is when it was
          last opened, e.g. "5 minutes ago" or "yesterday, 9:40 pm". -->
     <string name="last_opened">Last opened %1$s</string>
-    <string name="personal_tools">ذِكرى والتحديثات وإعداد Home</string>
+    <string name="personal_tools">Home settings</string>
     <string name="menu_zikra">Zikra</string>
-    <string name="menu_tv">TV</string>
+    <string name="menu_tv">Moon TV</string>
+    <string name="home_settings_title">Home settings</string>
+    <string name="home_enable">Enable Home</string>
+    <string name="home_disable">Stop Home service</string>
+    <string name="home_choose">Choose default Home app</string>
+    <string name="home_update">Update Home interface</string>
+    <string name="home_language">Interface language</string>
+    <string name="home_arabic">العربية</string>
+    <string name="home_system_language">System language</string>
+    <string name="home_cancel">Cancel</string>
+    <string name="home_checking">Checking for updates…</string>
+    <string name="home_current">Home is up to date.</string>
+    <string name="home_download">Downloading %1$s…</string>
+    <string name="home_progress">Downloading %1$s: %2$s</string>
+    <string name="home_failed">Could not complete: %1$s</string>
+    <string name="home_install_permission">Allow installation for Home, then return. Installation will continue automatically.</string>
+    <string name="home_unavailable">This settings page is unavailable on this device.</string>
+    <string name="home_enabled">Home activation saved.</string>
+    <string name="home_disabled">Home service stopped.</string>
+    <string name="home_permission">One-time setup required: pm grant %1$s android.permission.WRITE_SECURE_SETTINGS</string>
+    <string name="home_service_connected">Home service connected.</string>
+    <string name="home_service_binding">Home enabled; waiting for the system to connect its service.</string>
+    <string name="home_service_off">Home service is off.</string>
+    <string name="home_moon_pending">Moon TV is not configured yet. Its uploaded APK still needs verification.</string>
+    <string name="home_update_ready">Home update ready</string>
+    <string name="home_update_tap">Select to continue installation.</string>
+    <string name="home_update_message">A newer Home version was downloaded and verified.</string>
+    <string name="home_install">Install update</string>
+    <string name="home_later">Later</string>
+    <string name="home_updates_channel">Home updates</string>
+    <string name="home_restart_service">Enable the Home service to open the system power menu.</string>
 </resources>
