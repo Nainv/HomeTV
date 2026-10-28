@@ -189,4 +189,10 @@
     <string name="home_amazon_title">Home on Amazon</string>
     <string name="home_screen_permission">Turn on “%1$s” in Accessibility settings, then return to Home.</string>
     <string name="home_screen_disable_permission">Turn off “%1$s” in Accessibility settings, then return to Home.</string>
+    <string name="addons_installed">Installed cards</string>
+    <string name="addon_install">Install</string>
+    <string name="addon_open">Open</string>
+    <string name="addon_sdk_required">Not supported by this Android version</string>
+    <string name="addon_no_activity">No launchable screen for this add-on.</string>
+    <string name="addons_failed">Could not load the add-on catalog.</string>
 </resources>

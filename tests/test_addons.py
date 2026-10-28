@@ -1,4 +1,4 @@
-"""addons/ stays separate from the launcher: the core build never includes it, launcher/ never refers to it,
+"""addons/ stays separate from the launcher: the core build never includes it, launcher/ never imports its source projects,
 and every add-on folder follows the rules in addons/README.md."""
 import re
 import sys
@@ -23,6 +23,15 @@ def addon_dirs():
     return sorted(p for p in ADDONS.iterdir() if p.is_dir()) if ADDONS.is_dir() else []
 
 
+def addon_source_reference(text):
+    # This fork bundles a small download catalog in its own assets. Loading that
+    # metadata is not a Gradle/source dependency on the independent addons/ tree.
+    # Permit only this exact AssetManager call; all other paths remain forbidden.
+    text=text.replace('getAssets().open("addons/catalog.json")',
+                      'getAssets().open("<bundled-download-catalog>")')
+    return re.search(r"(\.\./)+addons/|\baddons/",text)
+
+
 class AddonIsolationTest(unittest.TestCase):
     def test_core_build_does_not_include_addons(self):
         for name in ("settings.gradle", "settings.gradle.kts"):
@@ -33,12 +42,20 @@ class AddonIsolationTest(unittest.TestCase):
                 self.assertEqual(re.findall(r"include\s*\(?\s*['\"]([^'\"]+)", text), [":app"],
                                  "the core build is the launcher app alone")
 
-    def test_launcher_never_references_addons(self):
+    def test_launcher_never_references_addon_source_projects(self):
         for path in LAUNCHER.rglob("*"):
             if not path.is_file() or path.suffix not in TEXT or "build" in path.relative_to(LAUNCHER).parts:
                 continue
             text = path.read_text(encoding="utf-8", errors="ignore")
-            self.assertNotRegex(text, r"(\.\./)+addons/|\baddons/", f"{path.relative_to(ROOT)} refers to addons/")
+            self.assertIsNone(addon_source_reference(text), f"{path.relative_to(ROOT)} refers to addon sources")
+
+    def test_only_the_packaged_catalog_asset_is_allowed(self):
+        catalog=LAUNCHER / "app/src/main/assets/addons/catalog.json"
+        self.assertTrue(catalog.is_file())
+        self.assertIsNone(addon_source_reference('context.getAssets().open("addons/catalog.json")'))
+        for path in ('../addons/weather', 'addons/weather/app', '../addons/catalog.json', 'addons/other.json'):
+            with self.subTest(path=path):
+                self.assertIsNotNone(addon_source_reference('getAssets().open("'+path+'")'))
 
     def test_no_prebuilt_apks(self):
         # Gradle's ignored build outputs are expected after compiling or testing an add-on.

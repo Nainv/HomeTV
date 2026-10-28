@@ -27,6 +27,15 @@ final class LauncherLocale {
         return new Locale.Builder().setLocale(locale).setUnicodeLocaleKeyword("nu", "latn").build();
     }
 
+    /** Pin the Activity resources too; some TV firmware replaces a wrapped base configuration. */
+    static void override(android.app.Activity activity, Context localized) {
+        Configuration override = new Configuration();
+        android.os.LocaleList locales = localized.getResources().getConfiguration().getLocales();
+        override.setLocales(locales);
+        override.setLayoutDirection(locales.get(0));
+        activity.applyOverrideConfiguration(override);
+    }
+
     /** base with the configured language, or base itself when locale is off. */
     static Context wrap(Context base) {
         String choice = base.getSharedPreferences("home_language", 0).getString("choice", null);

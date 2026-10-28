@@ -100,6 +100,7 @@
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <activity android:name=".HomeToolsActivity" android:exported="false" />
+        <activity android:name=".AddonCatalogActivity" android:exported="false" />
         <provider android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.installfiles"
             android:exported="false" android:grantUriPermissions="true">

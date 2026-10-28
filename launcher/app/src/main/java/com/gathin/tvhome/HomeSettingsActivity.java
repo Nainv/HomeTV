@@ -11,7 +11,9 @@ import android.widget.Toast;
 public class HomeSettingsActivity extends Activity {
     @Override
     protected void attachBaseContext(android.content.Context base) {
-        super.attachBaseContext(LauncherLocale.wrap(base));   // locale
+        android.content.Context localized = LauncherLocale.wrap(base);
+        super.attachBaseContext(localized);
+        LauncherLocale.override(this, localized);   // locale
     }
 
     @Override
