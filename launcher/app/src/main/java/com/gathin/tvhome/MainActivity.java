@@ -939,6 +939,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onResume() {
         super.onResume();
+        if ("home-diagnostics".equals(getIntent().getStringExtra("task"))) {
+            getIntent().removeExtra("task");
+            startActivity(new Intent(this, HomeToolsActivity.class).putExtra("task", "diagnostics"));
+            return;
+        }
         PersonalUpdates.check(this);
         android.content.SharedPreferences setup = getSharedPreferences("personal_setup", MODE_PRIVATE);
         if (setup.getInt("version", 0) < 11) {
