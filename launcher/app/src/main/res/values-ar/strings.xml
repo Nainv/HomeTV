@@ -41,7 +41,7 @@
     <string name="card_keep_hidden">إبقاؤها مخفية</string>
     <string name="card_show">عرض البطاقة</string>
     <string name="card_not_saved">تعذّر حفظ الاختيار</string>
-    <string name="module_cards">بطاقات الوحدات</string>
+    <string name="module_cards">بطاقات الإضافات</string>
     <string name="no_module_cards">لا توجد بطاقات وحدات مثبّتة</string>
     <string name="card_app_name">التطبيق: %1$s</string>
     <string name="card_state_shown">معروضة</string>
@@ -186,4 +186,10 @@
     <string name="home_amazon_title">Home على أمازون</string>
     <string name="home_screen_permission">فعّل «%1$s» في تسهيلات الاستخدام، ثم ارجع إلى Home.</string>
     <string name="home_screen_disable_permission">أوقف «%1$s» في تسهيلات الاستخدام، ثم ارجع إلى Home.</string>
+    <string name="addons_installed">إدارة البطاقات المثبّتة</string>
+    <string name="addon_install">تثبيت</string>
+    <string name="addon_open">فتح</string>
+    <string name="addon_sdk_required">غير متوافق مع إصدار أندرويد على الجهاز</string>
+    <string name="addon_no_activity">لا توجد شاشة قابلة للفتح لهذه الإضافة.</string>
+    <string name="addons_failed">تعذّر تحميل قائمة الإضافات.</string>
 </resources>

@@ -107,4 +107,10 @@
     <string name="home_amazon_title">Home auf Amazon</string>
     <string name="home_screen_permission">Aktiviere „%1$s“ in den Bedienungshilfen und kehre dann zu Home zurück.</string>
     <string name="home_screen_disable_permission">Deaktiviere „%1$s“ in den Bedienungshilfen und kehre dann zu Home zurück.</string>
+    <string name="addons_installed">Installierte Karten verwalten</string>
+    <string name="addon_install">Installieren</string>
+    <string name="addon_open">Öffnen</string>
+    <string name="addon_sdk_required">Mit dieser Android-Version nicht kompatibel</string>
+    <string name="addon_no_activity">Dieses Add-on hat keine startbare Oberfläche.</string>
+    <string name="addons_failed">Add-on-Katalog konnte nicht geladen werden.</string>
 </resources>

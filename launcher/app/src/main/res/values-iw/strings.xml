@@ -184,4 +184,10 @@
     <string name="home_amazon_title">Home ב־Amazon</string>
     <string name="home_screen_permission">יש להפעיל את ״%1$s״ בהגדרות הנגישות ולחזור אל Home.</string>
     <string name="home_screen_disable_permission">יש לכבות את ״%1$s״ בהגדרות הנגישות ולחזור אל Home.</string>
+    <string name="addons_installed">ניהול כרטיסים מותקנים</string>
+    <string name="addon_install">התקנה</string>
+    <string name="addon_open">פתיחה</string>
+    <string name="addon_sdk_required">לא תואם לגרסת Android במכשיר</string>
+    <string name="addon_no_activity">אין מסך זמין לפתיחה בתוסף הזה.</string>
+    <string name="addons_failed">לא ניתן לטעון את קטלוג התוספים.</string>
 </resources>

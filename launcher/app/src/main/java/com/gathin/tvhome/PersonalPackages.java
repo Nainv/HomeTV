@@ -36,11 +36,19 @@ final class PersonalPackages {
                 "57a5685e775fc6d5da629162b875b82e8e9c5e2dcd1e77c9b87cfeafae4f47fd", 39);
     }
     static Target zikra() throws Exception {
-        String assetName = "Zikratv.apk";
+        return releaseAsset("ذِكرى",ZIKRA_PACKAGE,"Nainv/ZApp","v1.0.5","Zikratv.apk");
+    }
+    static Target addon(Context context,String id) throws Exception {
+        AddonCatalog.Entry entry=AddonCatalog.find(context,id);
+        if(Build.VERSION.SDK_INT<entry.minSdk)throw new IOException("إصدار النظام لا يدعم هذه الإضافة");
+        return releaseAsset(entry.label(context),entry.pkg,AddonCatalog.REPOSITORY,
+                AddonCatalog.TAG,entry.assetName());
+    }
+    private static Target releaseAsset(String label,String pkg,String repository,String tag,String assetName) throws Exception {
         // Resolve the current asset digest from the owner's release, so replacement
         // APKs at the stable URL never get blocked by an obsolete hard-coded hash.
         HttpURLConnection connection = connect(
-                "https://api.github.com/repos/Nainv/ZApp/releases/tags/v1.0.5");
+                "https://api.github.com/repos/"+repository+"/releases/tags/"+tag);
         try (InputStream in = connection.getInputStream();
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[4096]; int count;
@@ -50,17 +58,17 @@ final class PersonalPackages {
             }
             org.json.JSONArray assets = new JSONObject(out.toString(StandardCharsets.UTF_8.name()))
                     .getJSONArray("assets");
-            String expected = "https://github.com/Nainv/ZApp/releases/download/v1.0.5/" + assetName;
+            String expected = "https://github.com/"+repository+"/releases/download/"+tag+"/"+assetName;
             for (int i = 0; i < assets.length(); i++) {
                 JSONObject asset = assets.getJSONObject(i);
                 if (!assetName.equals(asset.getString("name"))) continue;
                 String hash = asset.optString("digest", "");
                 if (!expected.equals(asset.getString("browser_download_url"))
                         || !hash.matches("sha256:[a-fA-F0-9]{64}"))
-                    throw new IOException("بيانات ملف ذكرى غير صالحة");
-                return new Target("ذِكرى", ZIKRA_PACKAGE, expected, hash.substring(7), 0);
+                    throw new IOException("بيانات ملف التثبيت غير صالحة");
+                return new Target(label,pkg,expected,hash.substring(7),0);
             }
-            throw new IOException("ملف ذكرى غير موجود بالإصدار");
+            throw new IOException("ملف التثبيت غير متاح بعد بالإصدار");
         } finally { connection.disconnect(); }
     }
     static Target latest() throws Exception {
@@ -131,7 +139,7 @@ final class PersonalPackages {
         if(!hex.toString().equalsIgnoreCase(t.sha))throw new IOException("الملف لا يطابق النسخة المعتمدة. أعد المحاولة لاحقاً.");
         PackageManager pm=c.getPackageManager();PackageInfo p=pm.getPackageArchiveInfo(f.getPath(),PackageManager.GET_SIGNATURES);
         if(p==null||!t.pkg.equals(p.packageName)||(t.version > 0 && p.versionCode!=t.version))throw new IOException("حزمة أو إصدار التطبيق غير صحيح");
-        if(t.pkg.equals(c.getPackageName())){
+        if(t.pkg.equals(c.getPackageName()) || t.url.startsWith("https://github.com/Nainv/HomeTV/releases/download/v3.7.9/home-addon-")){
             PackageInfo current=pm.getPackageInfo(c.getPackageName(),PackageManager.GET_SIGNATURES);
             if(current.signatures==null||p.signatures==null||!java.util.Arrays.equals(current.signatures,p.signatures))throw new IOException("توقيع التحديث لا يطابق التطبيق الحالي");
         }
@@ -142,6 +150,18 @@ final class PersonalPackages {
         Intent i=new Intent(Intent.ACTION_INSTALL_PACKAGE).setDataAndType(uri,"application/vnd.android.package-archive")
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         activity.startActivity(i);
+    }
+    static boolean openAddon(android.app.Activity activity,AddonCatalog.Entry entry){
+        if(openPackage(activity,entry.pkg))return true;
+        Intent card=new Intent(Intent.ACTION_MAIN).addCategory("com.gathin.tvhome.category.DOCK_CARD")
+                .setPackage(entry.pkg);
+        java.util.List<android.content.pm.ResolveInfo> matches=activity.getPackageManager()
+                .queryIntentActivities(card,0);
+        for(android.content.pm.ResolveInfo match:matches)try{
+            activity.startActivity(new Intent(card).setClassName(match.activityInfo.packageName,
+                    match.activityInfo.name));return true;
+        }catch(RuntimeException unavailable){ }
+        return false;
     }
     static boolean openZikra(android.app.Activity a){return openPackage(a,ZIKRA_PACKAGE);}
     static boolean openMoon(android.app.Activity a){return openPackage(a,MOON_PACKAGE);}

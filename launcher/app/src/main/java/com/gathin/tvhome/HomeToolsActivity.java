@@ -26,7 +26,9 @@ public final class HomeToolsActivity extends Activity {
     private PersonalPackages.Target readyTarget;
     private boolean busy, waitingForInstallPermission, waitingForScreenHome;
     @Override protected void attachBaseContext(Context base) {
-        super.attachBaseContext(LauncherLocale.wrap(base));
+        android.content.Context localized = LauncherLocale.wrap(base);
+        super.attachBaseContext(localized);
+        LauncherLocale.override(this, localized);
     }
     private boolean alive() { return !isFinishing() && !isDestroyed(); }
     private int dp(int n) { return Math.round(n * getResources().getDisplayMetrics().density); }
@@ -69,6 +71,7 @@ public final class HomeToolsActivity extends Activity {
         if ("update".equals(task)) checkUpdate();
         else if ("zikra".equals(task) || "setup".equals(task)) openZikra();
         else if ("moon".equals(task) && !PersonalPackages.openMoon(this)) startDownload(PersonalPackages.moon());
+        else if ("addon".equals(task)) downloadAddon(getIntent().getStringExtra("addon_id"));
         else if ("diagnostics".equals(task)) showHomeDiagnostics();
         waitingForScreenHome = saved != null && saved.getBoolean("screen_home_settings", false);
         if (saved != null && saved.containsKey("download_url")) {
@@ -164,6 +167,16 @@ public final class HomeToolsActivity extends Activity {
                 PersonalPackages.Target target = PersonalPackages.zikra();
                 runOnUiThread(() -> { if (alive()) { busy = false; startDownload(target); } });
             } catch (Exception failure) { showError(failure); }
+        });
+    }
+    private void downloadAddon(String id) {
+        if (busy) return;
+        busy=true;status.setText(R.string.home_checking);
+        worker.execute(()->{
+            try{
+                PersonalPackages.Target target=PersonalPackages.addon(this,id);
+                runOnUiThread(()->{if(alive()){busy=false;startDownload(target);}});
+            }catch(Exception failure){showError(failure);}
         });
     }
     private void checkUpdate() {

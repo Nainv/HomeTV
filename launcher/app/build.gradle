@@ -60,6 +60,8 @@ android {
         }
     }
 
+    testOptions { unitTests.includeAndroidResources = true }
+
     packagingOptions {
         resources {
             // Kotlin metadata pulled in by AndroidX's dependencies. This launcher is plain Java and never reads it;
@@ -82,4 +84,5 @@ dependencies {
     implementation 'androidx.dynamicanimation:dynamicanimation:1.0.0'
     // Test only (never in the APK): plain JVM tests for the module card validators, src/test.
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.robolectric:robolectric:4.14.1'
 }

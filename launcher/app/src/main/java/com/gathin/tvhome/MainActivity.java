@@ -97,11 +97,14 @@ import java.util.Set;
 public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void attachBaseContext(android.content.Context base) {
-        super.attachBaseContext(LauncherLocale.wrap(base));   // locale
+        android.content.Context localized = LauncherLocale.wrap(base);
+        super.attachBaseContext(localized);
+        LauncherLocale.override(this, localized);   // locale
     }
 
 
     private static final int LAUNCHER_SETTINGS_REQUEST = 42;
+    private static final int ADDON_SETTINGS_REQUEST = 43;
     /** Sent by QuickSettingsActivity: open Launcher settings from here so Home rebuilds when they close. */
     static final String ACTION_LAUNCHER_SETTINGS = "com.gathin.tvhome.action.LAUNCHER_SETTINGS";
     /** The system input switcher, forwarded here by InputsRequestActivity while handle_view_inputs is on. */
@@ -1026,6 +1029,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ADDON_SETTINGS_REQUEST && resultCode == RESULT_OK) {
+            root.post(this::showModuleCards);
+            return;
+        }
         if (requestCode == LAUNCHER_SETTINGS_REQUEST && resultCode == RESULT_OK
                 && data != null && data.getBooleanExtra(LauncherSettingsActivity.EXTRA_REORDER, false)) {
             getIntent().putExtra(LauncherSettingsActivity.EXTRA_REORDER, true);
@@ -3302,6 +3309,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         });
         addSettingsMenuRow(rows, popup, R.string.reorder, this::toggleReorder);
         addSettingsMenuRow(rows, popup, R.string.dock_edit, this::startDockEdit);
+        if (android.os.Build.VERSION.SDK_INT >= 26)
+            addSettingsMenuRow(rows, popup, R.string.module_cards, () -> startActivityForResult(
+                    new Intent(this, AddonCatalogActivity.class), ADDON_SETTINGS_REQUEST));
         addSettingsMenuRow(rows, popup, R.string.launcher_settings, () -> startActivityForResult(
                 new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST));
         addSettingsMenuRow(rows, popup, R.string.personal_tools,

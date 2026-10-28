@@ -126,10 +126,10 @@ class MenuReaderTest(unittest.TestCase):
         self.assertEqual(menu_rows(body), [])
 
     def test_the_real_menu_is_read(self):
-        # Six actions requested for this HomeTV fork; system settings remain on long press.
+        # Eight actions requested for this HomeTV fork; system settings remain on long press.
         body = method_body(MAIN_ACTIVITY.read_text(encoding="utf-8"))
         self.assertEqual(menu_rows(body),
-                         ["menu_tv", "menu_zikra", "reorder", "dock_edit", "launcher_settings", "personal_tools", "power_menu"])
+                         ["menu_tv", "menu_zikra", "reorder", "dock_edit", "module_cards", "launcher_settings", "personal_tools", "power_menu"])
 
     def test_a_row_with_no_string_is_reported(self):
         with self.assertRaisesRegex(AssertionError, r"R\.string\.not_a_string"):
