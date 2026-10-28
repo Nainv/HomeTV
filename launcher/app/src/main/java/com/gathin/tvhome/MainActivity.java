@@ -950,11 +950,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             return;
         }
         PersonalUpdates.check(this);
-        android.content.SharedPreferences setup = getSharedPreferences("personal_setup", MODE_PRIVATE);
-        if (setup.getInt("version", 0) < 11) {
-            setup.edit().putInt("version", 11).apply();
-            startActivity(new Intent(this, HomeToolsActivity.class).putExtra("task", "setup"));
-        }
+
         // A festival that started or ended while Home was in the background: rebuild with or without it.
         if (festive != festival.active(LocalDate.now())) {
             recreate();
@@ -3288,30 +3284,17 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         LinearLayout rows = panel.findViewById(R.id.rows);
         PopupWindow popup = glassPopup(panel, (int) (200 * density));
 
-        addSettingsMenuRow(rows, popup, R.string.launcher_settings, () -> startActivityForResult(
-                new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST));
-        addSettingsMenuRow(rows, popup, R.string.personal_tools,
-                () -> startActivity(new Intent(this, HomeToolsActivity.class)));
-        addSettingsMenuRow(rows, popup, R.string.reorder, this::toggleReorder);
+        addSettingsMenuRow(rows, popup, R.string.menu_tv,
+                () -> startActivity(new Intent(this, HomeToolsActivity.class).putExtra("task", "moon")));
         addSettingsMenuRow(rows, popup, R.string.menu_zikra, () -> {
             if (!PersonalPackages.openZikra(this)) {
-                startActivity(new Intent(this, HomeToolsActivity.class).putExtra("task", "setup"));
+                startActivity(new Intent(this, HomeToolsActivity.class).putExtra("task", "zikra"));
             }
         });
-        addSettingsMenuRow(rows, popup, R.string.menu_tv, () -> root.post(this::showInputs));
-
-        if (moduleCards) addSettingsMenuRow(rows, popup, R.string.module_cards, this::showModuleCards);
-        if (dockRow) addSettingsMenuRow(rows, popup, R.string.dock_edit, this::startDockEdit);
-        if (topMenu) {
-            if (showInputsMenuRow) addSettingsMenuRow(rows, popup, R.string.inputs, () -> root.post(this::showInputs));
-            addSettingsMenuRow(rows, popup, R.string.quick_network, this::openNetworkPill);
-        }
-        if (SystemSettings.vendorIntent(this) != null) {
-            addSettingsMenuRow(rows, popup, R.string.native_settings, () -> {
-                Intent vendor = SystemSettings.vendorIntent(this);
-                if (vendor != null) open(vendor);
-            });
-        }
+        addSettingsMenuRow(rows, popup, R.string.personal_tools,
+                () -> startActivity(new Intent(this, HomeToolsActivity.class)));
+        addSettingsMenuRow(rows, popup, R.string.dock_edit, this::startDockEdit);
+        addSettingsMenuRow(rows, popup, R.string.reorder, this::toggleReorder);
         addSettingsMenuRow(rows, popup, R.string.power_menu, this::restartFromMenu);
 
         panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
