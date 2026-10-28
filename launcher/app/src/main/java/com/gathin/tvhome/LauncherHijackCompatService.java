@@ -13,7 +13,7 @@ import android.app.AppOpsManager;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
 import android.os.Handler;
-import android.os.Looper;
+import android.os.HandlerThread;
 import android.os.PowerManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -28,10 +28,12 @@ import android.util.Log;
 public final class LauncherHijackCompatService extends Service {
     private static final String PREFS = "launcher_hijack_compat";
     private static final String TAG = "HomeHijackCompat";
-    private static boolean running;
+    private static volatile boolean running;
+    private static volatile boolean foreground;
+    private HandlerThread usageThread;
     private boolean registered;
     private long lastActivation;
-    private final Handler usageHandler = new Handler(Looper.getMainLooper());
+    private Handler usageHandler;
     private long usageCursor;
     private long lastUsageLaunch;
     private final Runnable usageWatcher = new Runnable() {
@@ -79,6 +81,10 @@ public final class LauncherHijackCompatService extends Service {
                                 || SystemClock.elapsedRealtime() - lastUsageLaunch >= 6000)) {
                         lastUsageLaunch = SystemClock.elapsedRealtime();
                         getSharedPreferences(PREFS, 0).edit()
+                                .putLong("detected_delay_ms", Math.max(0, now - latestTime))
+                                .putLong("launch_elapsed", lastUsageLaunch)
+                                .putLong("launch_delay_ms", -1).apply();
+                        getSharedPreferences(PREFS, 0).edit()
                                 .putLong("home_time", System.currentTimeMillis()).apply();
                         Intent open = new Intent(LauncherHijackCompatService.this, MainActivity.class)
                                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -93,7 +99,7 @@ public final class LauncherHijackCompatService extends Service {
                 getSharedPreferences(PREFS, 0).edit().putString("usage_status", "query-failed")
                         .putString("error", Log.getStackTraceString(failure)).apply();
             }
-            usageHandler.postDelayed(this, 350);
+            if (running) usageHandler.postDelayed(this, 350);
         }
     };
 
@@ -124,11 +130,26 @@ public final class LauncherHijackCompatService extends Service {
         return "launcherHijackSupported=" + supported()
                 + "\nlauncherHijackEnabled=" + enabled(context)
                 + "\nlauncherHijackRunning=" + running
+                + "\nusageForegroundService=" + foreground
+                + "\nusageDetectionDelayMs=" + p.getLong("detected_delay_ms", -1)
+                + "\nusageLaunchToResumeMs=" + p.getLong("launch_delay_ms", -1)
+                + "\nusageServiceCreatedAt=" + p.getLong("created_at", 0)
+                + "\nusageServiceDestroyedAt=" + p.getLong("destroyed_at", 0)
                 + "\nlauncherHijackLastHomeTime=" + p.getLong("home_time", 0)
                 + "\nlauncherHijackLastResult=" + p.getString("result", "no-home-broadcast-yet")
                 + "\nusageWatcherStatus=" + p.getString("usage_status", "not-started")
                 + "\nlauncherHijackError=" + p.getString("error", "");
     }
+    /** Record observed completion, rather than treating startActivity as proof of a launch. */
+    static void onHomeResumed(Context context) {
+        android.content.SharedPreferences p = context.getSharedPreferences(PREFS, 0);
+        long requested = p.getLong("launch_elapsed", 0);
+        long delay = SystemClock.elapsedRealtime() - requested;
+        if (requested > 0 && delay >= 0 && delay < 120000) {
+            p.edit().putLong("launch_delay_ms", delay).remove("launch_elapsed").apply();
+        }
+    }
+
     private final BroadcastReceiver homeWatcher = new BroadcastReceiver() {
         @Override public void onReceive(Context context, Intent intent) {
             if (!enabled(context) || !Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(intent.getAction())
@@ -158,6 +179,26 @@ public final class LauncherHijackCompatService extends Service {
         super.onCreate();
         if (!supported() || !enabled(this)) { stopSelf(); return; }
         try {
+            // This route is restricted to SDK 25, before notification channels/service types.
+            android.app.Notification notification = new androidx.core.app.NotificationCompat.Builder(
+                    this, "home_compat")
+                    .setSmallIcon(android.R.drawable.ic_menu_view)
+                    .setContentTitle("Home TV")
+                    .setContentText("توافق زر Home قيد التشغيل")
+                    .setPriority(androidx.core.app.NotificationCompat.PRIORITY_LOW)
+                    .setOngoing(true).setShowWhen(false)
+                    .setContentIntent(PendingIntent.getActivity(this, 8097,
+                            new Intent(this, HomeToolsActivity.class),
+                            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE))
+                    .build();
+            startForeground(8096, notification);
+            foreground = true;
+            usageThread = new HandlerThread("HomeUsageWatcher",
+                    android.os.Process.THREAD_PRIORITY_BACKGROUND);
+            usageThread.start();
+            usageHandler = new Handler(usageThread.getLooper());
+            getSharedPreferences(PREFS, 0).edit().putLong("created_at",
+                    System.currentTimeMillis()).apply();
             IntentFilter filter = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
             // Amazon's launcher may send this from a privileged app UID instead of system UID.
             // The only accepted event launches our already-exported MainActivity; it grants no access.
@@ -181,7 +222,12 @@ public final class LauncherHijackCompatService extends Service {
     @Override public IBinder onBind(Intent intent) { return null; }
     @Override public void onDestroy() {
         running = false;
-        usageHandler.removeCallbacks(usageWatcher);
+        foreground = false;
+        if (usageHandler != null) usageHandler.removeCallbacksAndMessages(null);
+        if (usageThread != null) usageThread.quitSafely();
+        stopForeground(STOP_FOREGROUND_REMOVE);
+        getSharedPreferences(PREFS, 0).edit().putLong("destroyed_at",
+                System.currentTimeMillis()).apply();
         if (registered) {
             unregisterReceiver(homeWatcher);
             registered = false;
