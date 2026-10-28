@@ -87,11 +87,10 @@ public final class LauncherHijackCompatService extends Service {
         if (!supported() || !enabled(this)) { stopSelf(); return; }
         try {
             IntentFilter filter = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-            if (Build.VERSION.SDK_INT >= 33) {
-                registerReceiver(homeWatcher, filter, Context.RECEIVER_NOT_EXPORTED);
-            } else {
-                registerReceiver(homeWatcher, filter);
-            }
+            // Amazon's launcher may send this from a privileged app UID instead of system UID.
+            // The only accepted event launches our already-exported MainActivity; it grants no access.
+            androidx.core.content.ContextCompat.registerReceiver(this, homeWatcher, filter,
+                    androidx.core.content.ContextCompat.RECEIVER_EXPORTED);
             registered = true;
             running = true;
             Log.i(TAG, "Home broadcast watcher registered");
