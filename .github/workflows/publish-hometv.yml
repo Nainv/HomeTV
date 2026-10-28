@@ -145,14 +145,18 @@ jobs:
           print(f"Prepared standard and Fire OS 6 Home TV {manifest['versionName']} ({manifest['versionCode']}).")
           PY
 
-      - name: Publish versioned GitHub Release
+      - name: Replace APKs on the fixed Home TV release
         env:
           GH_TOKEN: ${{ github.token }}
-          HOME_VERSION_NAME: ${{ steps.version.outputs.name }}
         run: |
-          gh release create "v$HOME_VERSION_NAME" dist/tv.apk dist/tv-fireos6.apk \
-            --title "Home TV $HOME_VERSION_NAME" \
-            --notes "Home TV signed updates. Stable downloads: standard https://github.com/Nainv/HomeTV/releases/latest/download/tv.apk ; Fire OS 6 (Android 7.1) https://github.com/Nainv/HomeTV/releases/latest/download/tv-fireos6.apk"
+          set -euo pipefail
+          if ! gh release view v3.7.9 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create v3.7.9 --repo "$GITHUB_REPOSITORY" \
+              --title "Home TV 3.7.9" \
+              --notes "Home TV downloads. APKs on this release are replaced by each signed update; installed app versions continue to increase."
+          fi
+          gh release upload v3.7.9 dist/tv.apk dist/tv-fireos6.apk \
+            --repo "$GITHUB_REPOSITORY" --clobber
 
       - name: Upload Pages files
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
