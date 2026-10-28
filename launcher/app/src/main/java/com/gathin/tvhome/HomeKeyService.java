@@ -100,8 +100,25 @@ public class HomeKeyService extends AccessibilityService {
     static boolean isConnected() { return running != null; }
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+        HomeDiagnostics.phase(this, "service-created", null);
+    }
+
+    @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
+        HomeDiagnostics.phase(this, "binding-connected", null);
+        try {
+            configureConnectedService();
+            HomeDiagnostics.phase(this, "binding-callback-finished", null);
+        } catch (RuntimeException | LinkageError failure) {
+            HomeDiagnostics.phase(this, "binding-failed", failure);
+            throw failure;
+        }
+    }
+
+    private void configureConnectedService() {
         running = this;
         powerMenu = new PowerMenuRemote(this);
         settingsScancodes = getResources().getIntArray(R.array.settings_key_scancodes);
