@@ -16,7 +16,7 @@ import java.security.MessageDigest;
 
 /** Personal-fork downloads: fixed HTTPS origin, pinned hashes and package identity, OS-confirmed install. */
 final class PersonalPackages {
-    static final String ORIGIN = "https://tvhome-philips.funchair515.chatgpt.site";
+    static final String ORIGIN = "https://nainv.github.io/HomeTV";
     static final String ZIKRA_PACKAGE = "com.zikra.tv";
     static final String SELF_PACKAGE = "com.gathin.tvhome";
     static final long MAX_APK = 64L * 1024 * 1024;
