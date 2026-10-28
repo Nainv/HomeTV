@@ -49,6 +49,7 @@ final class HomeDiagnostics {
 
     static String report(Context context) {
         StringBuilder out = new StringBuilder("HOME DIAGNOSTICS\n");
+        out.append("reportTime=").append(System.currentTimeMillis()).append("\n");
         try {
             PackageManager pm = context.getPackageManager();
             out.append("appVersion=").append(pm.getPackageInfo(context.getPackageName(), 0).versionName)
