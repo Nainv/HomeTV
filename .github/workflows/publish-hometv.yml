@@ -92,6 +92,12 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
+          ./gradlew --no-daemon lintStandardPublish lintFireOs6Publish \
+            -PhomeVersionCode=${{ steps.version.outputs.code }} \
+            -PhomeVersionName=${{ steps.version.outputs.name }} || {
+            find app/build -name 'lint-results-*.txt' -exec cat {} \\;
+            exit 1
+          }
           ./gradlew --no-daemon assembleStandardPublish assembleFireOs6Publish \
             -PhomeVersionCode=${{ steps.version.outputs.code }} \
             -PhomeVersionName=${{ steps.version.outputs.name }}
