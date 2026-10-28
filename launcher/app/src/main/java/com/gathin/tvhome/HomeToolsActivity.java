@@ -59,7 +59,7 @@ public final class HomeToolsActivity extends Activity {
     private void checkUpdate(){if(busy)return;busy=true;status.setText("جارٍ البحث عن تحديث…");worker.execute(()->{try{PersonalPackages.Target t=PersonalPackages.latest();long v=PersonalPackages.installedVersion(this);runOnUiThread(()->{if(!alive())return;busy=false;if(UpdateRules.newer(t.version,v))startDownload(t);else status.setText("الواجهة عندك على آخر نسخة متاحة.");});}catch(Exception e){showError(e);}});}
     private void startDownload(PersonalPackages.Target t){if(busy)return;busy=true;ready=null;install.setVisibility(View.GONE);status.setText("جارٍ تنزيل "+t.label+"…");worker.execute(()->{try{File f=PersonalPackages.download(this,t,(n,total)->runOnUiThread(()->{if(alive())status.setText("تنزيل "+t.label+": "+(total>0?(n*100/total)+"٪":(n/1024)+" KB"));}));runOnUiThread(()->{if(!alive())return;busy=false;ready=f;status.setText("الملف جاهز، وتم التحقق منه. اضغط تثبيت للمتابعة.");install.setVisibility(View.VISIBLE);install.requestFocus();});}catch(Exception e){showError(e);}});}
     private void showError(Exception e){runOnUiThread(()->{if(alive()){busy=false;status.setText("تعذّر الإكمال: "+(e.getMessage()==null?"جرّب مرة أخرى":e.getMessage()));}});}
-    private void installReady(){if(ready==null)return;try{if(!getPackageManager().canRequestPackageInstalls()){
+    private void installReady(){if(ready==null)return;try{if(android.os.Build.VERSION.SDK_INT>=26&&!getPackageManager().canRequestPackageInstalls()){
             status.setText("اسمح بالتثبيت لهذا التطبيق، ثم ارجع واضغط «تثبيت الملف الجاهز».");
             startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,Uri.parse("package:"+getPackageName())));return;
         }PersonalPackages.install(this,ready);
