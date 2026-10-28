@@ -3291,8 +3291,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         LinearLayout rows = panel.findViewById(R.id.rows);
         PopupWindow popup = glassPopup(panel, (int) (200 * density));
 
-        addSettingsMenuRow(rows, popup, R.string.menu_tv,
-                () -> startActivity(new Intent(this, HomeToolsActivity.class).putExtra("task", "moon")));
+        addSettingsMenuRow(rows, popup, R.string.menu_tv, () -> {
+            if (!PersonalPackages.openMoon(this))
+                startActivity(new Intent(this, HomeToolsActivity.class).putExtra("task", "moon"));
+        });
         addSettingsMenuRow(rows, popup, R.string.menu_zikra, () -> {
             if (!PersonalPackages.openZikra(this)) {
                 startActivity(new Intent(this, HomeToolsActivity.class).putExtra("task", "zikra"));
