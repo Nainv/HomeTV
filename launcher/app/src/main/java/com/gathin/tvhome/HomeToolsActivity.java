@@ -26,7 +26,7 @@ public final class HomeToolsActivity extends Activity {
         button(box,"ذِكرى — فتح أو تنزيل",()->{if(!PersonalPackages.openZikra(this))startDownload(PersonalPackages.zikra());});
         button(box,"البحث عن تحديث للواجهة",this::checkUpdate);
         button(box,"تفعيل زر Home وفتح الواجهة عند تشغيل التلفزيون",()->{
-            new android.app.AlertDialog.Builder(this).setTitle("خدمة زر الرئيسية").setMessage("في الصفحة التالية اختر خدمة «زر الرئيسية» التابعة لهذا التطبيق وفعّلها. ضغطة Home واحدة تفتح واجهتنا، و٣ ضغطات متتالية بفاصل أقل من ثلثي ثانية تفتح واجهة Philips. الخدمة تقرأ أزرار قائمة الطاقة فقط عند طلب فتحها لتشغيلها بالريموت. اختبر Home والصوت ثم إطفاء وتشغيل التلفزيون. يمكن إيقاف الخدمة من نفس الصفحة.")
+            new android.app.AlertDialog.Builder(this).setTitle("خدمة زر الرئيسية").setMessage("في الصفحة التالية اختر خدمة «زر الرئيسية» التابعة لهذا التطبيق وفعّلها. ضغطة Home واحدة تفتح واجهتنا، و٣ ضغطات متتالية بفاصل أقل من ثلثي ثانية تفتح واجهة النظام الأصلية. الخدمة تقرأ أزرار قائمة الطاقة فقط عند طلب فتحها لتشغيلها بالريموت. اختبر Home والصوت ثم إطفاء وتشغيل التلفزيون. يمكن إيقاف الخدمة من نفس الصفحة.")
                 .setPositiveButton("فتح تسهيلات الاستخدام",(d,w)->openSettings(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                 .setNegativeButton("رجوع",null).show();
         });
@@ -36,6 +36,7 @@ public final class HomeToolsActivity extends Activity {
         button(box,"حقوق وتراخيص البرامج",()->new android.app.AlertDialog.Builder(this).setTitle("التراخيص").setMessage("نسخة شخصية معدّلة من CleanYourTV. حقوق 2026 Gathin — ترخيص MIT. خط Outfit تحت ترخيص SIL OFL 1.1. النصوص الكاملة مضمّنة في assets/licenses داخل APK. ذِكرى تطبيق منفصل من مستودع المستخدم.").setPositiveButton("موافق",null).show());
         status=new TextView(this);status.setTextColor(Color.LTGRAY);status.setTextSize(16);status.setPadding(0,dp(14),0,dp(12));box.addView(status);
         install=button(box,"تثبيت الملف الجاهز",this::installReady);install.setVisibility(View.GONE);
+        button(box,"تشخيص زر Home",this::showHomeDiagnostics);
         button(box,"رجوع للواجهة",this::finish);
         box.getChildAt(3).requestFocus();
         if("update".equals(getIntent().getStringExtra("task")))checkUpdate();
@@ -46,13 +47,26 @@ public final class HomeToolsActivity extends Activity {
         }
     }
     @Override protected void onResume(){super.onResume();
-        android.view.accessibility.AccessibilityManager manager=(android.view.accessibility.AccessibilityManager)getSystemService(ACCESSIBILITY_SERVICE);
-        boolean enabled=false;
-        if(manager!=null)for(android.accessibilityservice.AccessibilityServiceInfo info:manager.getEnabledAccessibilityServiceList(android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_ALL_MASK)){
-            android.content.ComponentName cn=android.content.ComponentName.unflattenFromString(info.getId());
-            if(cn!=null&&cn.getPackageName().equals(getPackageName())&&cn.getClassName().equals(HomeKeyService.class.getName()))enabled=true;
+        if(homeStatus!=null)homeStatus.setText(HomeDiagnostics.summary(this));
+        if ("diagnostics".equals(getIntent().getStringExtra("task"))) {
+            getIntent().removeExtra("task");
+            showHomeDiagnostics();
         }
-        if(homeStatus!=null)homeStatus.setText(HomeKeyService.isConnected()?"خدمة Home: متصلة. ضغطة واحدة لواجهتنا، و٣ ضغطات سريعة لواجهة Philips.":enabled?"خدمة Home: مفعّلة لكن غير متصلة بعد. أوقفها وشغّلها من تسهيلات الاستخدام.":"خدمة Home: غير مفعّلة. زر الريموت لن يتحوّل قبل تفعيل خدمة «زر الرئيسية».");
+    }
+    private void showHomeDiagnostics() {
+        ScrollView scroll = new ScrollView(this);
+        TextView report = new TextView(this);
+        report.setText(HomeDiagnostics.report(this));
+        report.setTextColor(Color.WHITE);
+        report.setTextSize(15);
+        report.setTypeface(android.graphics.Typeface.MONOSPACE);
+        report.setTextIsSelectable(true);
+        report.setPadding(dp(16),dp(12),dp(16),dp(12));
+        scroll.setBackgroundColor(Color.rgb(13,25,28));
+        scroll.addView(report);
+        new android.app.AlertDialog.Builder(this).setTitle("تشخيص زر Home")
+                .setView(scroll).setPositiveButton("إغلاق",null)
+                .setNeutralButton("تحديث التقرير",(dialog,which)->showHomeDiagnostics()).show();
     }
     private Button button(LinearLayout box,String text,Runnable action){Button b=new Button(this);b.setText(text);b.setAllCaps(false);b.setTextSize(17);b.setPadding(dp(15),dp(7),dp(15),dp(7));LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(55));p.topMargin=dp(9);box.addView(b,p);b.setOnClickListener(v->action.run());return b;}
     private void openSettings(String action){try{startActivity(SystemSettings.intent(this,action));}catch(Exception e){status.setText("صفحة الإعدادات غير متاحة على هذا التلفزيون.");}}
