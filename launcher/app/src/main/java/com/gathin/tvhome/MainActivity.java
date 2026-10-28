@@ -385,9 +385,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     private java.util.Map<Integer, String> homeAppKeys = java.util.Collections.emptyMap();
 
-    @Override
     private String homeLanguageAtCreate;
 
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         homeLanguageAtCreate = getSharedPreferences("home_language", MODE_PRIVATE).getString("choice", null);
