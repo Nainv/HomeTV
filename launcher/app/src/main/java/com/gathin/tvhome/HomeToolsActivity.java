@@ -30,12 +30,25 @@ public final class HomeToolsActivity extends Activity {
                 .setPositiveButton("فتح تسهيلات الاستخدام",(d,w)->openSettings(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                 .setNegativeButton("رجوع",null).show();
         });
+        if (LauncherHijackCompatService.supported()) {
+            button(box,"تشغيل توافق LauncherHijack لزر Home",()->{
+                try {
+                    LauncherHijackCompatService.setEnabled(this,true);
+                    status.setText("تم تشغيل مراقبة إشارة Home. اضغط الزر الحقيقي بالريموت للاختبار. الضغط المطوّل يبقى للنظام. يمكنك إيقاف التوافق من الزر التالي.");
+                } catch (RuntimeException failure) { status.setText("تعذّر التشغيل: "+failure.getMessage()); }
+            });
+            button(box,"إيقاف توافق LauncherHijack",()->{
+                LauncherHijackCompatService.setEnabled(this,false);
+                status.setText("تم إيقاف مسار LauncherHijack.");
+            });
+        }
         button(box,"اختبار زر Home",()->{try{startActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));}catch(Exception e){status.setText("تعذّر فتح الشاشة الرئيسية للنظام.");}});
         button(box,"اختيار تطبيق الشاشة الرئيسية",()->openSettings(Settings.ACTION_HOME_SETTINGS));
         button(box,"إعدادات التلفزيون",()->openSettings(Settings.ACTION_SETTINGS));
-        button(box,"حقوق وتراخيص البرامج",()->new android.app.AlertDialog.Builder(this).setTitle("التراخيص").setMessage("نسخة شخصية معدّلة من CleanYourTV. حقوق 2026 Gathin — ترخيص MIT. خط Outfit تحت ترخيص SIL OFL 1.1. النصوص الكاملة مضمّنة في assets/licenses داخل APK. ذِكرى تطبيق منفصل من مستودع المستخدم.").setPositiveButton("موافق",null).show());
+        button(box,"حقوق وتراخيص البرامج",()->new android.app.AlertDialog.Builder(this).setTitle("التراخيص").setMessage("HomeTV يتضمن كوداً مشتقاً من LauncherHijack لـBaronKiko والمساهمين. النسخة المدمجة تحت GPLv3، دون ضمان، ويمكن إعادة توزيعها وتعديلها وفق الترخيص. كود CleanYourTV يحتفظ بحقوق Gathin وترخيص MIT، وخط Outfit بترخيص SIL OFL 1.1. المصدر الموافق لكل APK منشور باسم HomeTV-source.tar.gz بجانب ملف التنزيل. ذِكرى تطبيق مستقل.").setPositiveButton("موافق",null).show());
         status=new TextView(this);status.setTextColor(Color.LTGRAY);status.setTextSize(16);status.setPadding(0,dp(14),0,dp(12));box.addView(status);
         install=button(box,"تثبيت الملف الجاهز",this::installReady);install.setVisibility(View.GONE);
+        button(box,"عرض ترخيص GPLv3",this::showGplLicense);
         button(box,"تشخيص زر Home",this::showHomeDiagnostics);
         button(box,"رجوع للواجهة",this::finish);
         box.getChildAt(3).requestFocus();
@@ -52,6 +65,18 @@ public final class HomeToolsActivity extends Activity {
             getIntent().removeExtra("task");
             showHomeDiagnostics();
         }
+    }
+    private void showGplLicense() {
+        StringBuilder text=new StringBuilder();
+        try (java.io.BufferedReader reader=new java.io.BufferedReader(new java.io.InputStreamReader(
+                getAssets().open("licenses/LauncherHijack-GPL-3.0.txt"),java.nio.charset.StandardCharsets.UTF_8))) {
+            String line;while((line=reader.readLine())!=null)text.append(line).append('\n');
+        } catch (java.io.IOException failure) { text.append("تعذّر قراءة الترخيص: ").append(failure.getMessage()); }
+        ScrollView scroll=new ScrollView(this);
+        TextView body=new TextView(this);body.setText(text.toString());body.setTextSize(14);
+        body.setPadding(dp(16),dp(12),dp(16),dp(12));scroll.addView(body);
+        new android.app.AlertDialog.Builder(this).setTitle("GNU GPLv3")
+                .setView(scroll).setPositiveButton("إغلاق",null).show();
     }
     private void showHomeDiagnostics() {
         ScrollView scroll = new ScrollView(this);
