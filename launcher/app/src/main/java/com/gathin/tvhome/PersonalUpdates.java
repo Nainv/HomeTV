@@ -54,16 +54,17 @@ final class PersonalUpdates {
         android.app.job.JobScheduler scheduler = (android.app.job.JobScheduler)
                 context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
         if (scheduler == null || scheduler.getPendingJob(7303) != null) return;
-        scheduler.schedule(new android.app.job.JobInfo.Builder(7303,
+        try { scheduler.schedule(new android.app.job.JobInfo.Builder(7303,
                 new android.content.ComponentName(context, HomeUpdateJob.class))
                 .setRequiredNetworkType(android.app.job.JobInfo.NETWORK_TYPE_ANY)
-                .setPeriodic(60L * 60 * 1000).setPersisted(true).build());
+                .setPeriodic(60L * 60 * 1000).setPersisted(true).build()); }
+        catch (RuntimeException ignored) { /* Foreground checks remain available on restricted firmware. */ }
     }
     static synchronized java.util.concurrent.Future<?> checkBackground(Context base, Runnable finished) {
         if (checking) return null;
         checking = true;
         Context context = LauncherLocale.wrap(base.getApplicationContext());
-        return WORKER.submit(() -> {
+        java.util.concurrent.FutureTask<Void> task = new java.util.concurrent.FutureTask<Void>(() -> {
             try {
                 PersonalPackages.Target target = PersonalPackages.latest();
                 if (UpdateRules.newer(target.version, PersonalPackages.installedVersion(context))) {
@@ -76,11 +77,16 @@ final class PersonalUpdates {
                 }
             } catch (Exception ignored) {
                 // Offline or interrupted: retain the next periodic check and normal foreground check.
-            } finally {
+            }
+            return null;
+        }) {
+            @Override protected void done() {
                 synchronized (PersonalUpdates.class) { checking = false; }
                 finished.run();
             }
-        });
+        };
+        WORKER.execute(task);
+        return task;
     }
     private static void backgroundNotice(Context context, PersonalPackages.Target target) {
         SharedPreferences prefs = context.getSharedPreferences("personal_updates", 0);
