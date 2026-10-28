@@ -153,4 +153,6 @@
          last opened, e.g. "5 minutes ago" or "yesterday, 9:40 pm". -->
     <string name="last_opened">Last opened %1$s</string>
     <string name="personal_tools">ذِكرى والتحديثات وإعداد Home</string>
+    <string name="menu_zikra">Zikra</string>
+    <string name="menu_tv">TV</string>
 </resources>
