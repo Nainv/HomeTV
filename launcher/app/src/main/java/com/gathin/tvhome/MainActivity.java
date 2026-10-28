@@ -3300,10 +3300,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 startActivity(new Intent(this, HomeToolsActivity.class).putExtra("task", "zikra"));
             }
         });
+        addSettingsMenuRow(rows, popup, R.string.reorder, this::toggleReorder);
+        addSettingsMenuRow(rows, popup, R.string.dock_edit, this::startDockEdit);
+        addSettingsMenuRow(rows, popup, R.string.launcher_settings, () -> startActivityForResult(
+                new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST));
         addSettingsMenuRow(rows, popup, R.string.personal_tools,
                 () -> startActivity(new Intent(this, HomeToolsActivity.class)));
-        addSettingsMenuRow(rows, popup, R.string.dock_edit, this::startDockEdit);
-        addSettingsMenuRow(rows, popup, R.string.reorder, this::toggleReorder);
         addSettingsMenuRow(rows, popup, R.string.power_menu, this::restartFromMenu);
 
         panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
