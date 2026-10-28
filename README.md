@@ -638,17 +638,17 @@ and a wallpaper.
 <details>
 <summary><b>Launcher settings and the default home</b></summary>
 
-This HomeTV fork uses a short Settings click for these six actions, in order:
+This HomeTV fork uses a short Settings click for these seven actions, in order:
 
 1. **Moon TV** opens the installed Moon Player, or downloads the supplied, hash-verified APK.
 2. **Zikra** opens the installed app, or downloads Zikratv.apk from its stable GitHub release.
-3. **Home settings** contains Enable Home, Stop Home service, Choose default Home app, Update Home
-   interface, and Arabic/system language. Updates download and verify the APK, then open Android's
-   installer immediately; Android still asks the owner to approve installation. If installer permission
-   is needed, returning from that page continues automatically.
+3. **Reorder apps** changes the app order.
 4. **Edit dock** changes the dock's apps.
-5. **Reorder apps** changes the app order.
-6. **Restart…** opens the system power menu while the Home service is connected.
+5. **Launcher settings** opens the appearance editor for themes, wallpaper, animations and layout.
+6. **Home settings** separates Android TV and Amazon Fire TV activation, stop and default-home selection;
+   it also provides signed updates and Arabic/system language. Downloads open Android's installer
+   directly, including continuation after granting installer permission.
+7. **Restart…** opens the system power menu while the Home service is connected.
 
 Hold OK on Settings for the TV's system settings. This route remains available even though the extra
 Native settings row was removed from this fork's short-click menu. Some firmware has no default-home
