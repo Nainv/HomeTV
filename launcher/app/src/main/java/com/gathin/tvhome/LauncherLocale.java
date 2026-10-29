@@ -30,25 +30,42 @@ final class LauncherLocale {
     /** Pin the Activity resources too; some TV firmware replaces a wrapped base configuration. */
     static void override(android.app.Activity activity, Context localized) {
         Configuration override = new Configuration();
-        android.os.LocaleList locales = localized.getResources().getConfiguration().getLocales();
+        android.os.LocaleList locales = new android.os.LocaleList(selectedLocale(localized));
         override.setLocales(locales);
         override.setLayoutDirection(locales.get(0));
         activity.applyOverrideConfiguration(override);
     }
 
-    /** base with the configured language, or base itself when locale is off. */
-    static Context wrap(Context base) {
+    /** Resolve the saved choice independently of mutable framework Resources. */
+    private static Locale selectedLocale(Context base) {
         String choice = base.getSharedPreferences("home_language", 0).getString("choice", null);
         Locale locale = parse(choice == null ? Config.load(base).locale : choice);
         if (locale == null) locale = android.content.res.Resources.getSystem().getConfiguration().getLocales().get(0);
-        // Keep the selected language and direction, but use Western 0-9 in all formatters.
-        locale = westernDigits(locale);
-        // Formatters that take no Context (the clock's date, the lunar line) follow the default locale.
+        return westernDigits(locale);
+    }
+
+    /** Reassert only this Activity's resources after framework attachment on TV firmware. */
+    @SuppressWarnings("deprecation")
+    static void refresh(Context context) {
+        Locale locale=selectedLocale(context);
+        android.content.res.Resources resources=context.getResources();
+        Configuration config=new Configuration(resources.getConfiguration());
+        config.setLocales(new android.os.LocaleList(locale));
+        config.setLayoutDirection(locale);
+        resources.updateConfiguration(config,resources.getDisplayMetrics());
+        Locale.setDefault(locale);
+        android.os.LocaleList.setDefault(new android.os.LocaleList(locale));
+    }
+
+    /** base with the configured language, or the system language when the choice is empty. */
+    static Context wrap(Context base) {
+        Locale locale=selectedLocale(base);
         Locale.setDefault(locale);
         Configuration c = new Configuration(base.getResources().getConfiguration());
         android.os.LocaleList selected=new android.os.LocaleList(locale);
         android.os.LocaleList.setDefault(selected);
         c.setLocales(selected);
+        c.setLayoutDirection(locale);
         return base.createConfigurationContext(c);
     }
 }

@@ -21,6 +21,7 @@ public class InputsRequestActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        LauncherLocale.refresh(this);
         startActivity(new Intent(this, MainActivity.class)
                 .setAction(MainActivity.ACTION_VIEW_INPUTS)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
