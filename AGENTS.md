@@ -71,13 +71,10 @@ share their TV's list afterwards, follow [`docs/workflows/tv-list.md`](docs/work
 | `SHOWCASE.md` | Projects built on this repo that live in their own repositories. |
 | `CODE_OF_CONDUCT.md` | Includes the rule against publishing device identifiers, Wi-Fi names and IPs. |
 | `examples/` | One folder per tested TV model: `debloat.txt`, `tv.json` (its row in the TV tables), sometimes a `README.md` and a `config.json`. Indexed in `examples/README.md`, whose table is generated too. |
-| `docs/` | `docs/TROUBLESHOOTING.md`, the module-card contract (`docs/modules.md`), `docs/devices/` for models with notes but no tested list, and the [workflows](#workflows). |
 | `launcher/` | The reference launcher, package `com.gathin.tvhome`: plain Java, AndroidX RecyclerView and DynamicAnimation, `minSdk` 26, no `INTERNET` permission. |
 | `themes/` | One folder per theme: `config.json`, a required `screenshot.jpg`, optional wallpapers. Keys are documented in `themes/README.md`. |
-| `addons/` | Optional module-card apps, each its own Gradle project, never built into the launcher. |
 | `tools/` | The ADB client (`tv.py`) and the scripts, listed in the README's Tools table. Shell scripts have PowerShell twins. Each script's usage is in its first lines, and the larger ones have a guide beside them (`tools/*.md`): read it before running the script. |
 | `tests/` | Python `unittest` suite: list format, README tables, press counts, themes, add-ons, the Home guard and the tools against fake TVs. |
-| `.github/workflows/` | `ci.yml` (tests, launcher build, APK size gate), `addons.yml`, `maintainer-bot.yml`. |
 | `.github/maintainer/MAINTAINER.md` | The review policy the maintainer and the PR bot apply. |
 | `.github/pull_request_template.md` | The PR checklist. Fill it in. |
 
@@ -90,7 +87,6 @@ The core stays small on purpose. Pick the smallest home that fits (CONTRIBUTING,
 | A TV list, a fix, a translation, docs, a tool fix | A pull request here |
 | A small launcher switch that is off by default | A pull request here: see [`docs/workflows/launcher-switch.md`](docs/workflows/launcher-switch.md) |
 | A new look: colours, wallpaper, dock, columns, that existing config keys can carry | `themes/<name>/` |
-| A widget or tile that can be its own small app | `addons/<name>/`, as a module card that never touches `launcher/` |
 | A whole new launcher, a heavy restyle, a port to another platform, a lower `minSdk`, new permissions or network access, Fire TV Home takeover, a changed default for every TV | Your own repository, plus one row in `SHOWCASE.md` |
 | Safety rules in `PROMPT.md`, the Home-safety logic in the scripts, protected packages, CI and workflows, the APK size gate | Open an issue for the maintainer; do not change it in a PR |
 
@@ -107,7 +103,6 @@ use it and ends with the check to run.
 - [`launcher-switch.md`](docs/workflows/launcher-switch.md): add an off-by-default launcher switch, within the size gate.
 - [`translation.md`](docs/workflows/translation.md): add a launcher language, or fill strings missing from one.
 - [`theme.md`](docs/workflows/theme.md): add a theme from existing keys, with its screenshot from a real TV.
-- [`addon.md`](docs/workflows/addon.md): add a module-card app that never touches `launcher/`.
 - [`showcase.md`](docs/workflows/showcase.md): list a project that lives in its own repository.
 - [`press.md`](docs/workflows/press.md): add an article and update the four press counts.
 - [`docs-notes.md`](docs/workflows/docs-notes.md): add a troubleshooting entry or a `PROMPT.md` fix, keeping pinned facts.
@@ -121,7 +116,6 @@ use it and ends with the check to run.
 | Tests, as CI runs them | `tools/venv/bin/python -m unittest discover -s tests -v` after `python3 -m venv tools/venv` and `tools/venv/bin/pip install -r tools/requirements.txt`. On `main`, CI sets `CLEANYOURTV_STRICT=1`, and its "README tables" job checks that the TV tables and counts are what `tools/gen_tables.py` writes. On Windows the suites that drive `tools/*.sh` report as skipped: they need a POSIX shell, and CI runs them. |
 | Launcher, if you touched `launcher/` | JDK 17, Android SDK platform 34, build-tools 34.0.0. In `launcher/`: `./gradlew --no-daemon testStandardReleaseUnitTest lintStandardRelease lintFireOs6Release assembleStandardRelease assembleFireOs6Release`. Lint must stay at zero errors. |
 | APK size gate | `launcher/app/build/outputs/apk/standard/release/app-standard-release.apk` must be under 1,048,576 B (1024 KB). Linux: `stat -c %s`, macOS: `stat -f %z`. |
-| README rows | A new list adds only its folder, with a `tv.json`: the TV tables, the brand line and the counts are generated after merging, so leave them alone. A theme has its row in `themes/README.md`; an add-on in `addons/README.md`. |
 | One topic per PR | A TV list never rides inside a launcher feature PR. A device's list plus small fixes for that same device can be one PR. |
 | Tested on | Say which TV, Android version and firmware you tested on, in the PR template's "Tested on" line. |
 | Real TV | Launcher changes are verified on a real TV, not only the emulator: `tools/tv.py --screenshot shots/after.png DPAD_DOWN`. D-pad from every edge (Up, Down, Left, Right). A button handled by an accessibility helper needs a press on the real remote, and a force-stop of the launcher switches the helpers off (`docs/TROUBLESHOOTING.md`). |

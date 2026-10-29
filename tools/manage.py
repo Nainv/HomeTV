@@ -64,22 +64,8 @@ def plain(cell):
 
 
 def addons(root=ROOT):
-    text = (root / "addons" / "README.md").read_text(encoding="utf-8")
-    out = []
-    for c in table_rows(text, "| Add-on |"):
-        m = re.match(r"\[([^\]]+)\]\(([^)/]+)/\)", c[0])
-        if not m:
-            continue
-        name, folder = m.group(1), m.group(2)
-        d = root / "addons" / folder
-        shot = img_src(c[5]) if len(c) > 5 else None
-        out.append({
-            "kind": "add-on", "name": name, "id": folder, "what": plain(c[1]), "author": plain(c[2]),
-            "tested": plain(c[3]), "permissions": plain(c[4]),
-            "screenshot": str(root / "addons" / shot) if shot else None,
-            "package": package(d), "script": script(d),
-        })
-    return out
+    # Legacy command compatibility: this fork no longer contains card applications.
+    return []
 
 
 def package(folder):

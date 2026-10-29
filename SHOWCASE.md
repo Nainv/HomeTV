@@ -21,7 +21,7 @@ of these projects ask for far more than the reference launcher does:
 - Turn network ADB off when you're done, whatever you installed, and check it with
   `tools/adb-closed.py <tv ip>`.
 
-**Jump to:** [Home screens built as their own app](#home-screens-built-as-their-own-app) · [Forks of the launcher](#forks-of-the-launcher) · [Screensavers and add-ons](#screensavers-and-add-ons) · [Tools and companion apps](#tools-and-companion-apps) · [Other platforms: Fire TV and LG webOS](#other-platforms-fire-tv-and-lg-webos) · [Add-ons in this repo](addons/README.md) · [Guides and write-ups](#guides-and-write-ups) · [Find a project by TV brand](#find-a-project-by-tv-brand) · [Add yours](#add-yours)
+**Jump to:** [Home screens built as their own app](#home-screens-built-as-their-own-app) · [Forks of the launcher](#forks-of-the-launcher) · [Screensavers and add-ons](#screensavers-and-add-ons) · [Tools and companion apps](#tools-and-companion-apps) · [Other platforms: Fire TV and LG webOS](#other-platforms-fire-tv-and-lg-webos) · Add-ons in this repo (removed from this fork) · [Guides and write-ups](#guides-and-write-ups) · [Find a project by TV brand](#find-a-project-by-tv-brand) · [Add yours](#add-yours)
 
 131 projects so far.
 
@@ -195,7 +195,7 @@ Only want the tracking off on a Samsung, LG, Roku or other non-Android TV? [clea
 
 ## Add-ons in this repo
 
-Small optional apps that plug into the launcher as module cards live in [`addons/`](addons/README.md), with their own index. They are built separately and never make the launcher bigger.
+Small optional apps that plug into the launcher as module cards live in `addons/` (removed from this fork), with their own index. They are built separately and never make the launcher bigger.
 
 ## Guides and write-ups
 

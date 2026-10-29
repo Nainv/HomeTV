@@ -30,7 +30,8 @@
          apps that declare a module card (docs/specs/card.md). -->
     <queries>
         <package android:name="com.zikra.tv" />
-        <package android:name="com.flextv.livestorex" />
+        <package android:name="com.shadeed.moonpro" />
+        <package android:name="org.smarttube.stable" />
         <!-- The standard settings handlers, so package visibility doesn't hide them and send the pills to a vendor fallback by mistake. -->
         <intent>
             <action android:name="android.settings.SETTINGS" />
@@ -56,10 +57,6 @@
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-        </intent>
-        <intent>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="com.gathin.tvhome.category.DOCK_CARD" />
         </intent>
         <!-- stock_home_redirect: HomeKeyService looks up the stock launcher's HOME activity. -->
         <intent>
@@ -100,7 +97,6 @@
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <activity android:name=".HomeToolsActivity" android:exported="false" />
-        <activity android:name=".AddonCatalogActivity" android:exported="false" />
         <provider android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.installfiles"
             android:exported="false" android:grantUriPermissions="true">

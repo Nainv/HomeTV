@@ -28,13 +28,6 @@ public class LauncherLanguageActivityTest {
             assertEquals("تحديث واجهة Home",controller.get().getString(R.string.home_update));
         }finally{controller.pause().stop().destroy();}
     }
-    @Test public void bundledCatalogLoadsAllEntriesWithArabicNames() throws Exception {
-        app().getSharedPreferences("home_language",0).edit().putString("choice","ar").commit();
-        android.content.Context arabic=LauncherLocale.wrap(app());
-        assertEquals(24,AddonCatalog.load(arabic).size());
-        assertEquals("الطقس",AddonCatalog.find(arabic,"weather").label(arabic));
-        assertEquals("io.github.sumyabazar1.weather",AddonCatalog.find(arabic,"weather").pkg);
-    }
     @Test public void choosingSystemAgainUsesTheDeviceLanguage(){
         String system=Resources.getSystem().getConfiguration().getLocales().get(0).getLanguage();
         app().getSharedPreferences("home_language",0).edit().putString("choice","ar").commit();

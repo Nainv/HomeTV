@@ -98,7 +98,6 @@ final class Config {
     final String locale;
     /** Name after the greeting ("Good morning, Mr. Trịnh"); empty for the greeting alone. */
     final String greetingName;
-    final boolean moduleCards;
     /** Calmer motion for weak GPUs (config.xml, reduced_motion): stiff spring, short fades, no replay. */
     final boolean reducedMotion;
     /** Open the Live TV app on the first Home after the TV starts (config.xml, boot_to_live_tv). */
@@ -264,7 +263,7 @@ final class Config {
                    Map<String, String> appBanners, String sourcePanelService, String sourcePanelAction,
                    String sourcePanelExtra, boolean coocaaSources, String inputAction, List<String> inputSources,
                    String inputUriScheme, int columns, int rowsBelowDock, boolean animations, boolean advancedEffects,
-                   boolean shamsiDate, String greetingName, boolean moduleCards, boolean reducedMotion, boolean bootToLiveTv, boolean openOnStartChoice, boolean dockTitle, boolean dockRow, boolean topMenu, boolean launcherSettingsButton, boolean reorderButton, boolean showNetworkPill, boolean showInputsPill, boolean iconOnlyButtons, boolean iconOnlyInputs, boolean libraryButton, boolean showLibraryPill, int wifiLabelWidth, boolean alwaysShowNames, boolean wallpaperTrueColor, boolean focusOvershoot, String vpnApp,
+                   boolean shamsiDate, String greetingName, boolean reducedMotion, boolean bootToLiveTv, boolean openOnStartChoice, boolean dockTitle, boolean dockRow, boolean topMenu, boolean launcherSettingsButton, boolean reorderButton, boolean showNetworkPill, boolean showInputsPill, boolean iconOnlyButtons, boolean iconOnlyInputs, boolean libraryButton, boolean showLibraryPill, int wifiLabelWidth, boolean alwaysShowNames, boolean wallpaperTrueColor, boolean focusOvershoot, String vpnApp,
                    boolean showHomeSettingsShortcut, boolean showStats, boolean appLibrary, boolean appLibrarySelection, boolean libraryOkOpens, boolean uniformTiles, int backgroundColor, int skyIntensity,
                    int[] settingsKeycodes, boolean settingsKeyPanel, boolean restoreKeyServices, boolean wallpaperEnabled, File wallpaper, List<File> wallpapers,
                    int wallpaperRotationMinutes, int wallpaperDim, int dockOpacity, String wallpaperOrder, boolean overlayApplied,
@@ -307,7 +306,6 @@ final class Config {
         this.vpnPill = vpnPill;
         this.locale = locale;
         this.greetingName = greetingName;
-        this.moduleCards = moduleCards;
         this.reducedMotion = reducedMotion;
         this.bootToLiveTv = bootToLiveTv;
         this.openOnStartChoice = openOnStartChoice;
@@ -427,7 +425,6 @@ final class Config {
         boolean lunar = res.getBoolean(R.bool.lunar_date);
         int lunarOffset = -1;
         String greetingName = res.getString(R.string.greeting_name).trim();
-        boolean moduleCards = res.getBoolean(R.bool.module_cards);
         boolean reducedMotion = res.getBoolean(R.bool.reduced_motion);
         boolean bootToLiveTv = res.getBoolean(R.bool.boot_to_live_tv);
         boolean openOnStartChoice = res.getBoolean(R.bool.open_on_start_choice);
@@ -532,7 +529,6 @@ final class Config {
             lunar = bool(json, "lunar_date", lunar);
             lunarOffset = integer(json, "lunar_utc_offset", lunarOffset, -1, 14);
             greetingName = string(json, "greeting_name", greetingName).trim();
-            moduleCards = bool(json, "module_cards", moduleCards);
             reducedMotion = bool(json, "reduced_motion", reducedMotion);
             bootToLiveTv = bool(json, "boot_to_live_tv", bootToLiveTv);
             openOnStartChoice = bool(json, "open_on_start_choice", openOnStartChoice);
@@ -654,7 +650,7 @@ final class Config {
 
         return new Config(dock, fillDock, hidden, libraryApps, liveTv, liveTvAction, liveTvInputId, packageMap(launchActions), packageMap(appLabels),
                 packageMap(appBanners), panelService, panelAction, panelExtra, coocaaSources, inputAction, inputSources, inputUriScheme, Math.max(1, columns),
-                Math.max(0, rowsBelow), animations, advancedEffects, shamsi, greetingName, moduleCards, reducedMotion, bootToLiveTv,
+                Math.max(0, rowsBelow), animations, advancedEffects, shamsi, greetingName, reducedMotion, bootToLiveTv,
                 openOnStartChoice, dockTitle, dockRow, topMenu, launcherSettingsButton, reorderButton, showNetworkPill, showInputsPill,
                 iconOnlyButtons, iconOnlyInputs, libraryButton, showLibraryPill, wifiLabelWidth, alwaysShowNames, wallpaperTrueColor, focusOvershoot,
                 vpn, homeSettings, showStats, library, librarySelection, libraryOkOpens, uniformTiles, background,

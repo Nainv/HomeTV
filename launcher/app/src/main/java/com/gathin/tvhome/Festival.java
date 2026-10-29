@@ -50,7 +50,7 @@ final class Festival {
                 return NONE;
             }
         }
-        String g = greeting == null ? "" : Cards.cleanLabel(greeting, "");
+        String g = greeting == null ? "" : SafeLabels.cleanLabel(greeting, "");
         return new Festival(n, end, g, parseColor(accent));
     }
 

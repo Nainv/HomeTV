@@ -70,8 +70,8 @@ public final class HomeToolsActivity extends Activity {
         String task = getIntent().getStringExtra("task");
         if ("update".equals(task)) checkUpdate();
         else if ("zikra".equals(task) || "setup".equals(task)) openZikra();
-        else if ("moon".equals(task) && !PersonalPackages.openMoon(this)) startDownload(PersonalPackages.moon());
-        else if ("addon".equals(task)) downloadAddon(getIntent().getStringExtra("addon_id"));
+        else if ("moon".equals(task) && !PersonalPackages.openMoon(this)) downloadExternal(false);
+        else if ("smarttube".equals(task) && !PersonalPackages.openSmartTube(this)) downloadExternal(true);
         else if ("diagnostics".equals(task)) showHomeDiagnostics();
         waitingForScreenHome = saved != null && saved.getBoolean("screen_home_settings", false);
         if (saved != null && saved.containsKey("download_url")) {
@@ -169,12 +169,12 @@ public final class HomeToolsActivity extends Activity {
             } catch (Exception failure) { showError(failure); }
         });
     }
-    private void downloadAddon(String id) {
+    private void downloadExternal(boolean smarttube) {
         if (busy) return;
         busy=true;status.setText(R.string.home_checking);
         worker.execute(()->{
             try{
-                PersonalPackages.Target target=PersonalPackages.addon(this,id);
+                PersonalPackages.Target target=smarttube ? PersonalPackages.smarttube() : PersonalPackages.moon();
                 runOnUiThread(()->{if(alive()){busy=false;startDownload(target);}});
             }catch(Exception failure){showError(failure);}
         });

@@ -22,8 +22,8 @@ jobs:
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP"
-          curl --fail --location --proto '=https' --retry 2 'https://github.com/Nainv/HomeTV/releases/download/Moon/Moon.Pro.-.v3.8.apk
-          echo '57a5685e775fc6d5da629162b875b82e8e9c5e2dcd1e77c9b87cfeafae4f47fd  moon.apk' | sha256sum -c -
+          curl --fail --location --proto '=https' --retry 2 'https://github.com/Nainv/HomeTV/releases/download/Moon/Moon.Pro.-.v3.8.apk' -o moon.apk
+          echo '0917927748b37c1f00a6281939bdfa12915a18dedb6a233684afcc09eb6f3e70  moon.apk' | sha256sum -c -
           "$ANDROID_HOME/build-tools/34.0.0/aapt" dump badging moon.apk > moon-badging.txt
           python3 - <<'PY'
           from pathlib import Path

@@ -56,13 +56,6 @@
     <string name="enable">Aktivér</string>
     <string name="home_key_name">Hjem-knap</string>
     <string name="home_key_description">Får fjernbetjeningens Hjem-knap til at åbne denne launcher.</string>
-    <string name="module_cards">Modulkort</string>
-    <string name="no_module_cards">Ingen modulkort installeret</string>
-    <string name="card_keep_hidden">Skjul</string>
-    <string name="card_show">Vis kort</string>
-    <string name="card_state_shown">Vist</string>
-    <string name="card_state_hidden">Skjult</string>
-    <string name="card_state_new">Ny</string>
     <string name="dock_edit">Redigér dock</string>
     <string name="power_menu">Genstart…</string>
     <string name="tile_add_to_dock">Føj til dock</string>

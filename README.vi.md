@@ -275,8 +275,8 @@ Các lệnh ADB dưới đây dùng đường dẫn venv của macOS/Linux; trê
 Ứng dụng có thể khai báo tên thẻ, mô tả và màu nền. Launcher sẽ hỏi bạn có muốn hiện không, mặc định ẩn, và lưu lựa
 chọn theo chữ ký ứng dụng và tên thẻ. Giữ OK trên nút Cài đặt và chọn menu thẻ module để quản lý.
 
-Hướng dẫn cho lập trình viên xem [`docs/modules.md`](docs/modules.md), quy ước giao tiếp xem
-[`docs/specs/card.md`](docs/specs/card.md).
+Hướng dẫn cho lập trình viên xem `docs/modules.md` (removed from this fork), quy ước giao tiếp xem
+`docs/specs/card.md` (removed from this fork).
 
 ## Khôi phục launcher và ứng dụng gốc
 

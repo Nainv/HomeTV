@@ -217,7 +217,7 @@ TV_HOST=192.168.1.50 tools/theme.sh --reset
 
 应用可声明自己的卡片名称、说明和环境色。桌面会询问是否显示，默认保持隐藏，并按应用签名及卡片名称保存选择。在桌面「设置」按钮上长按确定，选择模块卡片菜单即可管理。
 
-开发说明见 [`docs/modules.md`](docs/modules.md)，接口约定见 [`docs/specs/card.md`](docs/specs/card.md)。
+开发说明见 `docs/modules.md` (removed from this fork)，接口约定见 `docs/specs/card.md` (removed from this fork)。
 
 ## 恢复原始桌面和应用
 
