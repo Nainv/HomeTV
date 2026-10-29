@@ -34,6 +34,7 @@ public final class HomeToolsActivity extends Activity {
     private int dp(int n) { return Math.round(n * getResources().getDisplayMetrics().density); }
     @Override public void onCreate(Bundle saved) {
         super.onCreate(saved);
+        LauncherLocale.refresh(this);
         FrameLayout root = new FrameLayout(this);
         root.setLayoutDirection(android.text.TextUtils.getLayoutDirectionFromLocale(
                 getResources().getConfiguration().getLocales().get(0)));

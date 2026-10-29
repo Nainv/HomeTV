@@ -387,6 +387,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        LauncherLocale.refresh(this);
         homeLanguageAtCreate = getSharedPreferences("home_language", MODE_PRIVATE).getString("choice", null);
         setContentView(R.layout.activity_main);
         density = getResources().getDisplayMetrics().density;
