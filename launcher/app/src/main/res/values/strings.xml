@@ -76,25 +76,6 @@
     <string name="input_key_service_description">Opens the input switcher when the remote\'s Input button is pressed.</string>
     <string name="home_key_name">Home button</string>
     <string name="home_key_description">Makes the remote\'s Home button open this launcher.</string>
-    <string name="card_prompt_title">New card from %1$s</string>
-    <string name="card_prompt_body">%1$s can show a card on your home screen. Keeping it hidden leaves the app\'s normal tile as it is.</string>
-    <string name="card_prompt_names">The card is named \'%1$s\'. The app is \'%2$s\'.</string>
-    <string name="card_prompt_resigned">%1$s was updated with a different signing key, so your earlier answer no longer applies. Decide again for its card.</string>
-    <string name="card_prompt_relabelled">%1$s changed the name of its card since you decided. Decide again for it.</string>
-    <string name="card_prompt_hint">You can change this later: hold OK on Settings, then choose Module cards.</string>
-    <string name="card_prompt_identity">%1$s, key %2$s</string>
-    <string name="card_keep_hidden">Keep hidden</string>
-    <string name="card_show">Show card</string>
-    <string name="card_not_saved">Couldn\'t save the choice</string>
-    <string name="module_cards">Module cards</string>
-    <string name="no_module_cards">No module cards installed</string>
-    <string name="card_app_name">App: %1$s</string>
-    <string name="card_state_shown">Shown</string>
-    <string name="card_state_over_limit">Shown, over the limit of 8</string>
-    <string name="card_state_hidden">Hidden</string>
-    <string name="card_state_new">New</string>
-    <string name="card_state_new_key">New key</string>
-    <string name="card_state_new_label">New name</string>
     <string name="dock_edit">Edit dock</string>
     <!-- Settings menu: opens the system power menu (Restart on most TVs). -->
     <string name="power_menu">Restart…</string>
@@ -189,10 +170,5 @@
     <string name="home_amazon_title">Home on Amazon</string>
     <string name="home_screen_permission">Turn on “%1$s” in Accessibility settings, then return to Home.</string>
     <string name="home_screen_disable_permission">Turn off “%1$s” in Accessibility settings, then return to Home.</string>
-    <string name="addons_installed">Installed cards</string>
-    <string name="addon_install">Install</string>
-    <string name="addon_open">Open</string>
-    <string name="addon_sdk_required">Not supported by this Android version</string>
-    <string name="addon_no_activity">No launchable screen for this add-on.</string>
-    <string name="addons_failed">Could not load the add-on catalog.</string>
+    <string name="menu_smarttube">SmartTube</string>
 </resources>

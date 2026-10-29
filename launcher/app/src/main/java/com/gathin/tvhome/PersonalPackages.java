@@ -19,7 +19,8 @@ import java.security.MessageDigest;
 final class PersonalPackages {
     static final String ORIGIN = "https://nainv.github.io/HomeTV";
     static final String ZIKRA_PACKAGE = "com.zikra.tv";
-    static final String MOON_PACKAGE = "com.flextv.livestorex";
+    static final String MOON_PACKAGE = "com.shadeed.moonpro";
+    static final String SMARTTUBE_PACKAGE = "org.smarttube.stable";
     static final String SELF_PACKAGE = "com.gathin.tvhome";
     static final long MAX_APK = 64L * 1024 * 1024;
     static final class Target {
@@ -30,25 +31,23 @@ final class PersonalPackages {
         }
     }
     interface Progress { void bytes(long received, long total); }
-    static Target moon() {
-        return new Target("Moon TV", MOON_PACKAGE,
-                "https://github.com/Nainv/HomeTV/releases/download/Moon/MOON.PLAYER.4K.-.v3.5.apk",
-                "57a5685e775fc6d5da629162b875b82e8e9c5e2dcd1e77c9b87cfeafae4f47fd", 39);
+
+    static Target moon() throws Exception {
+        return releaseAsset("Moon TV", MOON_PACKAGE,"Nainv/HomeTV","Moon","Moon.Pro.-.v3.8.apk");
     }
+    static Target smarttube() throws Exception {
+        return releaseAsset("SmartTube",SMARTTUBE_PACKAGE,"yuliskov/SmartTube",null,null);
+    }
+    static boolean openSmartTube(android.app.Activity activity){return openPackage(activity,SMARTTUBE_PACKAGE);}
     static Target zikra() throws Exception {
         return releaseAsset("ذِكرى",ZIKRA_PACKAGE,"Nainv/ZApp","v1.0.5","Zikratv.apk");
     }
-    static Target addon(Context context,String id) throws Exception {
-        AddonCatalog.Entry entry=AddonCatalog.find(context,id);
-        if(Build.VERSION.SDK_INT<entry.minSdk)throw new IOException("إصدار النظام لا يدعم هذه الإضافة");
-        return releaseAsset(entry.label(context),entry.pkg,AddonCatalog.REPOSITORY,
-                AddonCatalog.TAG,entry.assetName());
-    }
+
     private static Target releaseAsset(String label,String pkg,String repository,String tag,String assetName) throws Exception {
         // Resolve the current asset digest from the owner's release, so replacement
         // APKs at the stable URL never get blocked by an obsolete hard-coded hash.
         HttpURLConnection connection = connect(
-                "https://api.github.com/repos/"+repository+"/releases/tags/"+tag);
+                "https://api.github.com/repos/"+repository+"/releases/"+(tag == null ? "latest" : "tags/"+tag));
         try (InputStream in = connection.getInputStream();
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[4096]; int count;
@@ -56,8 +55,23 @@ final class PersonalPackages {
                 if (out.size() + count > 262144) throw new IOException("بيانات الإصدار كبيرة جدًا");
                 out.write(buffer, 0, count);
             }
-            org.json.JSONArray assets = new JSONObject(out.toString(StandardCharsets.UTF_8.name()))
-                    .getJSONArray("assets");
+            JSONObject release = new JSONObject(out.toString(StandardCharsets.UTF_8.name()));
+            if(tag == null){
+                tag=release.getString("tag_name");
+                if(release.optBoolean("prerelease") || release.optBoolean("draft")
+                        || !tag.matches("[0-9]+(?:\\.[0-9]+)*s"))
+                    throw new IOException("الإصدار المستقر غير متاح");
+                org.json.JSONArray candidates=release.getJSONArray("assets");
+                for(int i=0;i<candidates.length();i++){
+                    String name=candidates.getJSONObject(i).getString("name");
+                    if(name.matches("SmartTube_stable_[0-9]+(?:\\.[0-9]+)*_universal\\.apk")){
+                        if(assetName != null)throw new IOException("ملفات تثبيت متعددة");
+                        assetName=name;
+                    }
+                }
+                if(assetName == null)throw new IOException("ملف Universal غير متاح");
+            }
+            org.json.JSONArray assets = release.getJSONArray("assets");
             String expected = "https://github.com/"+repository+"/releases/download/"+tag+"/"+assetName;
             for (int i = 0; i < assets.length(); i++) {
                 JSONObject asset = assets.getJSONObject(i);
@@ -139,7 +153,7 @@ final class PersonalPackages {
         if(!hex.toString().equalsIgnoreCase(t.sha))throw new IOException("الملف لا يطابق النسخة المعتمدة. أعد المحاولة لاحقاً.");
         PackageManager pm=c.getPackageManager();PackageInfo p=pm.getPackageArchiveInfo(f.getPath(),PackageManager.GET_SIGNATURES);
         if(p==null||!t.pkg.equals(p.packageName)||(t.version > 0 && p.versionCode!=t.version))throw new IOException("حزمة أو إصدار التطبيق غير صحيح");
-        if(t.pkg.equals(c.getPackageName()) || t.url.startsWith("https://github.com/Nainv/HomeTV/releases/download/v3.7.9/home-addon-")){
+        if(t.pkg.equals(c.getPackageName())){
             PackageInfo current=pm.getPackageInfo(c.getPackageName(),PackageManager.GET_SIGNATURES);
             if(current.signatures==null||p.signatures==null||!java.util.Arrays.equals(current.signatures,p.signatures))throw new IOException("توقيع التحديث لا يطابق التطبيق الحالي");
         }
@@ -151,18 +165,7 @@ final class PersonalPackages {
                 .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         activity.startActivity(i);
     }
-    static boolean openAddon(android.app.Activity activity,AddonCatalog.Entry entry){
-        if(openPackage(activity,entry.pkg))return true;
-        Intent card=new Intent(Intent.ACTION_MAIN).addCategory("com.gathin.tvhome.category.DOCK_CARD")
-                .setPackage(entry.pkg);
-        java.util.List<android.content.pm.ResolveInfo> matches=activity.getPackageManager()
-                .queryIntentActivities(card,0);
-        for(android.content.pm.ResolveInfo match:matches)try{
-            activity.startActivity(new Intent(card).setClassName(match.activityInfo.packageName,
-                    match.activityInfo.name));return true;
-        }catch(RuntimeException unavailable){ }
-        return false;
-    }
+
     static boolean openZikra(android.app.Activity a){return openPackage(a,ZIKRA_PACKAGE);}
     static boolean openMoon(android.app.Activity a){return openPackage(a,MOON_PACKAGE);}
     private static boolean openPackage(android.app.Activity a,String pkg){

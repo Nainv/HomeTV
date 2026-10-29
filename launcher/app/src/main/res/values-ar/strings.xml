@@ -31,25 +31,6 @@
     <string name="input_key_service_description">يفتح قائمة المدخلات عند الضغط على زر المدخلات في جهاز التحكم.</string>
     <string name="home_key_name">زر الرئيسية</string>
     <string name="home_key_description">يجعل زر الرئيسية في جهاز التحكم يفتح هذه الشاشة.</string>
-    <string name="card_prompt_title">بطاقة جديدة من %1$s</string>
-    <string name="card_prompt_body">يمكن لتطبيق %1$s عرض بطاقة على شاشتك الرئيسية. إبقاؤها مخفية يترك مربّع التطبيق العادي كما هو.</string>
-    <string name="card_prompt_names">اسم البطاقة «%1$s»، واسم التطبيق «%2$s».</string>
-    <string name="card_prompt_resigned">تم تحديث %1$s بمفتاح توقيع مختلف، لذا لم يعد اختيارك السابق ساريًا. اختر من جديد بشأن بطاقته.</string>
-    <string name="card_prompt_relabelled">غيّر %1$s اسم بطاقته منذ أن اخترت. اختر من جديد بشأنها.</string>
-    <string name="card_prompt_hint">يمكنك تغيير هذا لاحقًا: اضغط مطولًا على OK فوق الإعدادات ثم اختر بطاقات التطبيقات.</string>
-    <string name="card_prompt_identity">%1$s، المفتاح %2$s</string>
-    <string name="card_keep_hidden">إبقاؤها مخفية</string>
-    <string name="card_show">عرض البطاقة</string>
-    <string name="card_not_saved">تعذّر حفظ الاختيار</string>
-    <string name="module_cards">بطاقات الإضافات</string>
-    <string name="no_module_cards">لا توجد بطاقات وحدات مثبّتة</string>
-    <string name="card_app_name">التطبيق: %1$s</string>
-    <string name="card_state_shown">معروضة</string>
-    <string name="card_state_over_limit">معروضة، فوق الحد الأقصى وهو 8</string>
-    <string name="card_state_hidden">مخفية</string>
-    <string name="card_state_new">جديدة</string>
-    <string name="card_state_new_key">مفتاح جديد</string>
-    <string name="card_state_new_label">اسم جديد</string>
     <string name="launcher_settings">إعدادات المشغّل</string>
     <string name="native_settings">إعدادات المُصنّع</string>
     <string name="columns_label">تطبيقات في كل صف</string>
@@ -186,10 +167,5 @@
     <string name="home_amazon_title">Home على أمازون</string>
     <string name="home_screen_permission">فعّل «%1$s» في تسهيلات الاستخدام، ثم ارجع إلى Home.</string>
     <string name="home_screen_disable_permission">أوقف «%1$s» في تسهيلات الاستخدام، ثم ارجع إلى Home.</string>
-    <string name="addons_installed">إدارة البطاقات المثبّتة</string>
-    <string name="addon_install">تثبيت</string>
-    <string name="addon_open">فتح</string>
-    <string name="addon_sdk_required">غير متوافق مع إصدار أندرويد على الجهاز</string>
-    <string name="addon_no_activity">لا توجد شاشة قابلة للفتح لهذه الإضافة.</string>
-    <string name="addons_failed">تعذّر تحميل قائمة الإضافات.</string>
+    <string name="menu_smarttube">SmartTube</string>
 </resources>

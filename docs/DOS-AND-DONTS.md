@@ -75,7 +75,7 @@ first" is a common reply.
 
 | Do | Don't |
 |---|---|
-| Make it its own Gradle project with a module card, its permissions in its README, and no change under `launcher/` ([addons/README](../addons/README.md), [#1329](https://github.com/Gathin23/cleanyourtv/issues/1329)) | Commit an APK or build output |
+| Make it its own Gradle project with a module card, its permissions in its README, and no change under `launcher/` (addons/README (removed from this fork), [#1329](https://github.com/Gathin23/cleanyourtv/issues/1329)) | Commit an APK or build output |
 | Add `screenshot.jpg` from a real TV, 16:9, under 300 KB, plus its cell in the add-ons table ([#1358](https://github.com/Gathin23/cleanyourtv/pull/1358)) | Leave out which TV you tested on ([#823](https://github.com/Gathin23/cleanyourtv/pull/823)) |
 | Say in the README exactly what it sends where if it uses the network, and keep the backend self-hosted ([#1329](https://github.com/Gathin23/cleanyourtv/issues/1329), [#1221](https://github.com/Gathin23/cleanyourtv/pull/1221)) | Sign in to an account or keep a session key on the TV ([#1221](https://github.com/Gathin23/cleanyourtv/pull/1221)) |
 | Use official, documented APIs | Depend on unofficial catalogue APIs that can break without notice ([#1269](https://github.com/Gathin23/cleanyourtv/pull/1269)) |

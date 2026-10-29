@@ -272,8 +272,8 @@ TV_HOST=192.168.1.50 tools/theme.sh --reset
 して、アプリの署名とカード名ごとに選択を保存します。管理するには、設定ボタンで OK を長押ししてモジュールカードのメニューを
 選びます。
 
-開発者向けのガイドは [`docs/modules.md`](docs/modules.md)、インターフェースの仕様は
-[`docs/specs/card.md`](docs/specs/card.md) を参照してください。
+開発者向けのガイドは `docs/modules.md` (removed from this fork)、インターフェースの仕様は
+`docs/specs/card.md` (removed from this fork) を参照してください。
 
 ## 元のランチャーとアプリを復元する
 

@@ -611,8 +611,8 @@ The **TV** needs Android 8.0 (API 26) or newer: `minSdk` is a compile-time floor
 | **28 languages** | Follows the TV's language, with a fully mirrored right-to-left layout for Hebrew |
 | **App library** | Optional: browse every installed app and add or remove Home shortcuts. See [the app library guide](docs/app-library.md) |
 | **Tile menu** | Optional (`tile_menu`): hold OK on a tile for Move, Remove from Home and App info. Off, holding OK opens App info |
-| **Module cards** | Any TV app can offer its own tile; you approve each one once. See [`docs/modules.md`](docs/modules.md) |
-| **Add-ons** | Optional apps that plug in as module cards, kept in [`addons/`](addons/) and never built into the launcher |
+| **Module cards** | Any TV app can offer its own tile; you approve each one once. See `docs/modules.md` (removed from this fork) |
+| **Add-ons** | Optional apps that plug in as module cards, kept in `addons/` (removed from this fork) and never built into the launcher |
 | **Clock screensaver** | A drifting clock over the glow, so nothing burns in |
 | **Remote keys** | Keeps the Input, YouTube and gear buttons working after the stock launcher is gone |
 
@@ -638,13 +638,13 @@ and a wallpaper.
 <details>
 <summary><b>Launcher settings and the default home</b></summary>
 
-This HomeTV fork uses a short Settings click for these eight actions (the add-on catalog is available on Android 8+ screens), in order:
+This HomeTV fork uses a short Settings click for these eight actions, in order:
 
 1. **Moon TV** opens the installed Moon Player, or downloads the supplied, hash-verified APK.
 2. **Zikra** opens the installed app, or downloads Zikratv.apk from its stable GitHub release.
 3. **Reorder apps** changes the app order.
 4. **Edit dock** changes the dock's apps.
-5. **Module cards** opens the installable add-on catalog and management of installed cards. Each installation needs Android confirmation; some add-ons require their own services or permissions.
+5. **SmartTube** opens the installed stable app, or downloads the verified Universal APK for Android TV and Fire TV.
 6. **Launcher settings** opens the appearance editor for themes, wallpaper, animations and layout.
 7. **Home settings** separates Android TV and Amazon Fire TV activation, stop and default-home selection;
    it also provides signed updates and Arabic/system language. Downloads open Android's installer
@@ -691,8 +691,8 @@ languages keep their original layouts.
 
 Any TV app can declare its own tile (label, caption, glow). The launcher asks you once per app, keeps it
 hidden by default, and remembers the answer for that app's signing key and card name. Hold OK on Settings
-and choose Module cards to change your mind. How to make one: [`docs/modules.md`](docs/modules.md); the
-contract: [`docs/specs/card.md`](docs/specs/card.md).
+and choose Module cards to change your mind. How to make one: `docs/modules.md` (removed from this fork); the
+contract: `docs/specs/card.md` (removed from this fork).
 
 </details>
 
@@ -1072,3 +1072,5 @@ The people whose work is in this repo:
 
 MIT, see [`LICENSE`](LICENSE). The Outfit typeface is under the SIL Open Font License, see
 `launcher/FONT-LICENSE-OFL.txt`.
+
+See [future plans](docs/watch-next.md).

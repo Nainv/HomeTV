@@ -285,8 +285,8 @@ Un'app può dichiarare il nome della scheda, la descrizione e il colore di sfond
 mostrarla, di serie è nascosta, e memorizza la scelta in base alla firma dell'app e al nome della scheda. Tieni premuto
 OK sul pulsante Impostazioni e scegli il menu delle schede modulo per gestirle.
 
-Per gli sviluppatori vedi [`docs/modules.md`](docs/modules.md); per il contratto di comunicazione vedi
-[`docs/specs/card.md`](docs/specs/card.md).
+Per gli sviluppatori vedi `docs/modules.md` (removed from this fork); per il contratto di comunicazione vedi
+`docs/specs/card.md` (removed from this fork).
 
 ## Ripristinare il launcher e le app originali
 
