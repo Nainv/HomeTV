@@ -35,6 +35,7 @@ final class HomeServiceSetup {
             if (enable && Settings.Secure.getInt(context.getContentResolver(),
                     Settings.Secure.ACCESSIBILITY_ENABLED, 0) != 1)
                 throw new IllegalStateException("النظام لم يحتفظ بالتفعيل العام.");
+            if (!enable) ServiceRepair.stopRequested(context,HomeKeyService.class);
             return enable
                     ? context.getString(R.string.home_enabled)
                     : context.getString(R.string.home_disabled);

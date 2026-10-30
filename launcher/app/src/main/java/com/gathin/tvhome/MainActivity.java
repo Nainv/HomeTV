@@ -3265,9 +3265,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     // ---- launcher settings and module cards -------------------------------------------------------
 
     /** top_menu: the gear's dropdown, standing in for the Inputs, Wi-Fi and Settings pills. */
-    private void showTopMenu() {
-        showSettingsMenu();
-    }
 
     /** The header opens launcher settings directly; hold OK keeps the extra home actions available. */
     private void showSettingsMenu() {
@@ -3285,12 +3282,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 startActivity(new Intent(this, HomeToolsActivity.class).putExtra("task", "zikra"));
             }
         });
-        addSettingsMenuRow(rows, popup, R.string.reorder, this::toggleReorder);
-        addSettingsMenuRow(rows, popup, R.string.dock_edit, this::startDockEdit);
         addSettingsMenuRow(rows, popup, R.string.menu_smarttube, () -> {
             if (!PersonalPackages.openSmartTube(this))
                 startActivity(new Intent(this, HomeToolsActivity.class).putExtra("task", "smarttube"));
         });
+        addSettingsMenuRow(rows, popup, R.string.reorder, this::toggleReorder);
+        addSettingsMenuRow(rows, popup, R.string.dock_edit, this::startDockEdit);
         addSettingsMenuRow(rows, popup, R.string.launcher_settings, () -> startActivityForResult(
                 new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST));
         addSettingsMenuRow(rows, popup, R.string.personal_tools,

@@ -641,10 +641,10 @@ and a wallpaper.
 This HomeTV fork uses a short Settings click for these eight actions, in order:
 
 1. **Moon TV** opens the installed Moon Player, or downloads the supplied, hash-verified APK.
-2. **Zikra** opens the installed app, or downloads Zikratv.apk from its stable GitHub release.
-3. **Reorder apps** changes the app order.
-4. **Edit dock** changes the dock's apps.
-5. **SmartTube** opens the installed stable app, or downloads the verified Universal APK for Android TV and Fire TV.
+2. **Zikra - زكرى** opens the installed app, or downloads Zikratv.apk from its stable GitHub release.
+3. **SmartTube** opens the installed stable app, or downloads the verified Universal APK for Android TV and Fire TV.
+4. **Reorder apps** changes the app order.
+5. **Edit dock** changes the dock's apps.
 6. **Launcher settings** opens the appearance editor for themes, wallpaper, animations and layout.
 7. **Home settings** separates Android TV and Amazon Fire TV activation, stop and default-home selection;
    it also provides signed updates and Arabic/system language. Downloads open Android's installer
@@ -658,6 +658,10 @@ picker; in that case the manufacturer settings may be all the device exposes.
 Automatic update checks run when Home is used, plus an hourly network-constrained background job
 that Android persists across reboots. Android chooses when the job can run, so this is not an immediate
 server-push notification. A newer verified download generates an update notification.
+
+TV compatibility includes upstream CVTE COMMON_HOME matching and the AOSP TV Settings fallback. These are code-level compatibility changes, not certification on every model. Samsung Tizen and LG webOS require separate native-platform applications; this APK targets Android/Fire TV.
+
+The Home service is opt-in. Previously connected key services can be restored when Home restarts after a force-stop, only when WRITE_SECURE_SETTINGS was already granted. Explicitly stopping the service keeps it off. This does not establish why a particular device lost activation.
 
 The Home service is opt-in. The Android 11 Fire TV test confirmed immediate Home-button return after
 binding, but the observed delayed binding after a cold boot needs another physical-device test.

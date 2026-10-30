@@ -1,6 +1,10 @@
 package com.gathin.tvhome;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.graphics.drawable.ColorDrawable;
+import android.view.Window;
+import android.view.ViewGroup;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -25,6 +29,7 @@ public final class HomeToolsActivity extends Activity {
     private File ready;
     private PersonalPackages.Target readyTarget;
     private boolean busy, waitingForInstallPermission, waitingForScreenHome;
+    private Dialog choiceDialog;
     @Override protected void attachBaseContext(Context base) {
         android.content.Context localized = LauncherLocale.wrap(base);
         super.attachBaseContext(localized);
@@ -119,24 +124,60 @@ public final class HomeToolsActivity extends Activity {
                 .setNegativeButton(R.string.home_cancel, null).show();
     }
     private void chooseHomePlatform() {
-        new AlertDialog.Builder(this).setTitle(R.string.home_settings_title)
-                .setItems(new String[]{getString(R.string.home_screen_title), getString(R.string.home_amazon_title)},
-                        (dialog, which) -> platformControls(which == 1))
-                .setNegativeButton(R.string.home_cancel, null).show();
+        showChoices(R.string.home_settings_title,
+                new int[]{R.string.home_screen_title,R.string.home_amazon_title},
+                new Runnable[]{()->platformControls(false),()->platformControls(true)});
     }
     private void platformControls(boolean amazon) {
-        new AlertDialog.Builder(this).setTitle(amazon ? R.string.home_amazon_title : R.string.home_screen_title)
-                .setItems(new String[]{getString(R.string.home_enable), getString(R.string.home_disable),
-                        getString(R.string.home_choose)}, (dialog, which) -> {
-                    if (which == 2) { openSettings(Settings.ACTION_HOME_SETTINGS); return; }
-                    if (!amazon) { configureScreenHome(which == 0); return; }
-                    if (LauncherHijackCompatService.supported()) {
-                        try { LauncherHijackCompatService.setEnabled(this, which == 0); }
-                        catch (RuntimeException failure) { showError(failure); }
-                    } else {
-                        status.setText(HomeServiceSetup.setEnabled(this, which == 0));
-                    }
-                }).setNegativeButton(R.string.home_cancel, null).show();
+        showChoices(amazon ? R.string.home_amazon_title : R.string.home_screen_title,
+                new int[]{R.string.home_enable,R.string.home_disable,R.string.home_choose},
+                new Runnable[]{()->setPlatformEnabled(amazon,true),
+                        ()->setPlatformEnabled(amazon,false),
+                        ()->openSettings(Settings.ACTION_HOME_SETTINGS)});
+    }
+    private void setPlatformEnabled(boolean amazon,boolean enable) {
+        if(!amazon){configureScreenHome(enable);return;}
+        if(LauncherHijackCompatService.supported()) {
+            try { LauncherHijackCompatService.setEnabled(this,enable); }
+            catch(RuntimeException failure){showError(failure);}
+        } else status.setText(HomeServiceSetup.setEnabled(this,enable));
+    }
+    /** All platform pages reuse the Settings panel and row drawables, including remote focus states. */
+    private void showChoices(int title,int[] labels,Runnable[] actions) {
+        if(choiceDialog != null)choiceDialog.dismiss();
+        Dialog dialog=new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        ScrollView scroll=new ScrollView(this);
+        LinearLayout panel=(LinearLayout)getLayoutInflater().inflate(R.layout.popup_inputs,scroll,false);
+        scroll.addView(panel);
+        panel.setLayoutDirection(android.text.TextUtils.getLayoutDirectionFromLocale(
+                getResources().getConfiguration().getLocales().get(0)));
+        LinearLayout rows=panel.findViewById(R.id.rows);
+        TextView heading=new TextView(this);
+        heading.setText(title);heading.setTextSize(24);heading.setTextColor(Color.WHITE);
+        heading.setPadding(dp(16),dp(12),dp(16),dp(12));rows.addView(heading);
+        for(int i=0;i<labels.length;i++){
+            final Runnable action=actions[i];
+            row(rows,labels[i],()->{dialog.dismiss();action.run();});
+        }
+        row(rows,R.string.home_cancel,dialog::dismiss);
+        dialog.setContentView(scroll);
+        dialog.setOnDismissListener(d->{if(choiceDialog==dialog)choiceDialog=null;});
+        choiceDialog=dialog;
+        dialog.show();
+        Window window=dialog.getWindow();
+        if(window != null){
+            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            window.setLayout(Math.min(dp(580),getResources().getDisplayMetrics().widthPixels-dp(48)),
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+            window.setDimAmount(0.55f);
+        }
+        rows.getChildAt(1).requestFocus();
+        panel.setAlpha(0f);panel.setPivotY(0f);panel.setScaleY(0.92f);panel.setTranslationY(-dp(8));
+        panel.animate().alpha(1f).scaleY(1f).translationY(0f)
+                .setDuration(Config.load(this).reducedMotion ? Motion.REDUCED_MS : 220)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator(1.6f)).start();
     }
     private void configureScreenHome(boolean enable) {
         // Normal TV setup uses the system consent page, never a privileged ADB grant.
@@ -267,5 +308,6 @@ public final class HomeToolsActivity extends Activity {
         }
         super.onSaveInstanceState(out);
     }
-    @Override protected void onDestroy() { worker.shutdownNow(); super.onDestroy(); }
+    @Override protected void onDestroy() {
+        if(choiceDialog != null)choiceDialog.dismiss(); worker.shutdownNow(); super.onDestroy(); }
 }

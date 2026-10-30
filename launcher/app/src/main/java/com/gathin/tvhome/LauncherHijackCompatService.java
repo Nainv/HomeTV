@@ -34,7 +34,6 @@ public final class LauncherHijackCompatService extends Service {
     private boolean registered;
     private long lastActivation;
     private Handler usageHandler;
-    private long usageCursor;
     private long lastUsageLaunch;
     private final Runnable usageWatcher = new Runnable() {
         @Override public void run() {
@@ -48,10 +47,7 @@ public final class LauncherHijackCompatService extends Service {
                 long now = System.currentTimeMillis();
                 if (!allowed) {
                     getSharedPreferences(PREFS, 0).edit().putString("usage_status", "permission-required").apply();
-                    usageCursor = now;
-                } else if (power != null && !power.isInteractive()) {
-                    usageCursor = now;
-                } else {
+                } else if (power == null || power.isInteractive()) {
                     UsageStatsManager manager = (UsageStatsManager) getSystemService(USAGE_STATS_SERVICE);
                     UsageEvents events = manager == null ? null
                             : manager.queryEvents(now - 4000, now);
@@ -68,7 +64,6 @@ public final class LauncherHijackCompatService extends Service {
                             latestTime = event.getTimeStamp();
                         }
                     }
-                    usageCursor = now;
                     // Avoid disk writes on every polling tick.
                     if (!"watching".equals(getSharedPreferences(PREFS, 0).getString("usage_status", "")))
                         getSharedPreferences(PREFS, 0).edit().putString("usage_status", "watching").apply();
@@ -246,7 +241,6 @@ public final class LauncherHijackCompatService extends Service {
                     androidx.core.content.ContextCompat.RECEIVER_EXPORTED);
             registered = true;
             running = true;
-            usageCursor = System.currentTimeMillis();
             usageHandler.post(usageWatcher);
             Log.i(TAG, "Home broadcast watcher registered");
         } catch (RuntimeException failure) {
