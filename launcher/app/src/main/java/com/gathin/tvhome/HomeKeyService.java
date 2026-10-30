@@ -103,6 +103,7 @@ public class HomeKeyService extends AccessibilityService {
     static boolean disableFromSettings() {
         HomeKeyService service = running;
         if (service == null) return false;
+        ServiceRepair.stopRequested(service,HomeKeyService.class);
         service.disableSelf();
         return true;
     }
@@ -169,6 +170,7 @@ public class HomeKeyService extends AccessibilityService {
 
     @Override
     public void onDestroy() {
+        HomeDiagnostics.phase(this,"service-destroyed",null);
         if (running == this) running = null;
         if (powerMenu != null) powerMenu.close();
         handler.removeCallbacksAndMessages(null);
@@ -339,6 +341,7 @@ public class HomeKeyService extends AccessibilityService {
     /** Unbound by Android: the user turned the helper off, so Home doesn't put it back (ServiceRepair). */
     @Override
     public boolean onUnbind(Intent intent) {
+        HomeDiagnostics.phase(this,steppingOut ? "standby-unbound" : "service-unbound",null);
         if (repairRecord && !steppingOut) ServiceRepair.disconnected(this, getClass());
         return super.onUnbind(intent);
     }

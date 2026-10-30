@@ -78,7 +78,7 @@
         <item quantity="other">%1$d تطبيق</item>
     </plurals>
     <string name="greeting_with_name">%1$s، %2$s</string>
-    <string name="menu_zikra">ذِكرى</string>
+    <string name="menu_zikra">Zikra - زكرى</string>
     <string name="menu_tv">Moon TV</string>
     <string name="good_forenoon">صباح الخير</string>
     <string name="festival_dussehra_greeting">عيد دوسيهرا سعيد</string>

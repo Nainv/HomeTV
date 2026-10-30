@@ -61,6 +61,13 @@ final class HomeDiagnostics {
             out.append("appVersion=").append(pm.getPackageInfo(context.getPackageName(), 0).versionName)
                     .append("\nmodel=").append(Build.MODEL).append("\nsdk=").append(Build.VERSION.SDK_INT);
             out.append("\nselected=").append(selected(context));
+            out.append("\nrestoreKeyServices=").append(Config.load(context).restoreKeyServices);
+            out.append("\nserviceRepairRemembered=").append(context.getSharedPreferences(
+                    "accessibility_helpers",0).getBoolean(HomeKeyService.class.getName(),false));
+            out.append("\nlanguageChoice=").append(context.getSharedPreferences(
+                    "home_language",0).getString("choice","system"));
+            out.append("\nresourceLanguage=").append(context.getResources().getConfiguration()
+                    .getLocales().get(0).toLanguageTag());
             out.append("\naccessibilityEnabled=").append(Settings.Secure.getInt(
                     context.getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED, 0));
             out.append("\nboundInApp=").append(HomeKeyService.isConnected());

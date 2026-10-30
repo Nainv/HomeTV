@@ -22,6 +22,10 @@ import java.util.Objects;
  */
 final class ServiceRepair {
     private static final String PREFS = "accessibility_helpers";
+    private static final java.util.concurrent.atomic.AtomicBoolean RESTORING =
+            new java.util.concurrent.atomic.AtomicBoolean();
+    private static final java.util.concurrent.atomic.AtomicInteger STOP_GENERATION =
+            new java.util.concurrent.atomic.AtomicInteger();
 
     private ServiceRepair() {
     }
@@ -32,6 +36,12 @@ final class ServiceRepair {
 
     static void disconnected(Context context, Class<?> service) {
         prefs(context).edit().remove(service.getName()).apply();
+    }
+
+    /** An explicit in-app Stop cancels any delayed restore already in flight. */
+    static void stopRequested(Context context,Class<?> service) {
+        STOP_GENERATION.incrementAndGet();
+        disconnected(context,service);
     }
 
     static void restore(Context context) {
@@ -77,17 +87,19 @@ final class ServiceRepair {
             // that way instead of being overwritten by a snapshot.
             final String without = others.toString();
             final String with = updated.toString();
+            if (!RESTORING.compareAndSet(false,true)) return;
+            final int generation=STOP_GENERATION.get();
             new Thread(() -> {
                 try {
-                    if (!replaceList(cr, list, with)) return;
+                    if (generation != STOP_GENERATION.get() || !replaceList(cr, list, with)) return;
                     Thread.sleep(1000);
-                    if (!replaceList(cr, with, without)) return;
+                    if (generation != STOP_GENERATION.get() || !replaceList(cr, with, without)) return;
                     Thread.sleep(1000);
-                    if (!replaceList(cr, without, with)) return;
+                    if (generation != STOP_GENERATION.get() || !replaceList(cr, without, with)) return;
                     Settings.Secure.putInt(cr, Settings.Secure.ACCESSIBILITY_ENABLED, 1);
                 } catch (RuntimeException | InterruptedException ignored) {
                     // The setting is the system's; a refusal leaves the helper off, as before.
-                }
+                } finally { RESTORING.set(false); }
             }, "ServiceRepair").start();
         } catch (RuntimeException ignored) {
             // The setting is the system's; a refusal leaves the helper off, as before.
