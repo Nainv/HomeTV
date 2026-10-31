@@ -166,4 +166,5 @@
     <string name="home_screen_permission">יש להפעיל את ״%1$s״ בהגדרות הנגישות ולחזור אל Home.</string>
     <string name="home_screen_disable_permission">יש לכבות את ״%1$s״ בהגדרות הנגישות ולחזור אל Home.</string>
     <string name="menu_smarttube">SmartTube</string>
+    <string name="home_screen_manual_accessibility">אם דף הנגישות לא נפתח ישירות, פתחו העדפות מכשיר או מערכת ← נגישות ← %1$s, הפעילו את השירות וחזרו אל Home.</string>
 </resources>

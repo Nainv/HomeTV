@@ -168,4 +168,5 @@
     <string name="home_screen_permission">فعّل «%1$s» في تسهيلات الاستخدام، ثم ارجع إلى Home.</string>
     <string name="home_screen_disable_permission">أوقف «%1$s» في تسهيلات الاستخدام، ثم ارجع إلى Home.</string>
     <string name="menu_smarttube">SmartTube</string>
+    <string name="home_screen_manual_accessibility">إذا لم تُفتح تسهيلات الاستخدام مباشرة، افتح تفضيلات الجهاز أو النظام ← تسهيلات الاستخدام ← %1$s، فعّل الخدمة ثم ارجع إلى Home.</string>
 </resources>

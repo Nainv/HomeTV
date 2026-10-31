@@ -171,4 +171,5 @@
     <string name="home_screen_permission">Turn on “%1$s” in Accessibility settings, then return to Home.</string>
     <string name="home_screen_disable_permission">Turn off “%1$s” in Accessibility settings, then return to Home.</string>
     <string name="menu_smarttube">SmartTube</string>
+    <string name="home_screen_manual_accessibility">If the accessibility page does not open directly, open Device preferences or System → Accessibility → %1$s, enable it and return to Home.</string>
 </resources>
