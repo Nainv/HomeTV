@@ -189,12 +189,11 @@ public final class HomeToolsActivity extends Activity {
         waitingForScreenHome = true;
         status.setText(getString(enable ? R.string.home_screen_permission
                 : R.string.home_screen_disable_permission, getString(R.string.home_key_name)));
-        try {
-            // Start the standard page directly; Android package visibility can hide
-            // its handler from resolveActivity even when launching it is allowed.
-            startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
-        } catch (RuntimeException unavailable) {
-            openSettings(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+        AccessibilitySetup.Result opened=AccessibilitySetup.open(this);
+        if(opened != AccessibilitySetup.Result.ACCESSIBILITY_PAGE){
+            String help=getString(R.string.home_screen_manual_accessibility,getString(R.string.home_key_name));
+            status.setText(help);
+            android.widget.Toast.makeText(this,help,android.widget.Toast.LENGTH_LONG).show();
         }
     }
     private void openSettings(String action) {

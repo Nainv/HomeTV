@@ -60,6 +60,8 @@ final class HomeDiagnostics {
             PackageManager pm = context.getPackageManager();
             out.append("appVersion=").append(pm.getPackageInfo(context.getPackageName(), 0).versionName)
                     .append("\nmodel=").append(Build.MODEL).append("\nsdk=").append(Build.VERSION.SDK_INT);
+            out.append("\nsettingsRoute=").append(context.getSharedPreferences("home_settings_route",0).getString("route","never-opened"));
+            out.append("\nsettingsRouteResult=").append(context.getSharedPreferences("home_settings_route",0).getString("result","none"));
             out.append("\nselected=").append(selected(context));
             out.append("\nrestoreKeyServices=").append(Config.load(context).restoreKeyServices);
             out.append("\nserviceRepairRemembered=").append(context.getSharedPreferences(

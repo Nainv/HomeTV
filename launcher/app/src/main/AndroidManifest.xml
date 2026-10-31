@@ -32,6 +32,10 @@
         <package android:name="com.zikra.tv" />
         <package android:name="com.shadeed.moonpro" />
         <package android:name="org.smarttube.stable" />
+        <package android:name="com.android.tv.settings" />
+        <package android:name="com.android.settings" />
+        <intent><action android:name="android.settings.ACCESSIBILITY_SETTINGS" /></intent>
+        <intent><action android:name="android.settings.ACCESSIBILITY_DETAILS_SETTINGS" /></intent>
         <!-- The standard settings handlers, so package visibility doesn't hide them and send the pills to a vendor fallback by mistake. -->
         <intent>
             <action android:name="android.settings.SETTINGS" />
